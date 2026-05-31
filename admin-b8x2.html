@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>👑 Câu Cá 2D — Trang ADMIN (riêng tư)</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: system-ui, sans-serif; color: #fff; min-height: 100vh;
+      background: linear-gradient(160deg, #2a0a3a, #18062e);
+      display: flex; align-items: center; justify-content: center; padding: 20px;
+    }
+    .card {
+      background: rgba(255,255,255,0.06); border: 1px solid #7a3aaa;
+      border-radius: 18px; padding: 26px 22px; max-width: 440px; width: 100%;
+      text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    }
+    h1 { font-size: 24px; margin-bottom: 6px; color: #c060ff; }
+    .warn {
+      font-size: 12.5px; background: rgba(255,80,80,0.15); border: 1px solid #c04040;
+      border-radius: 10px; padding: 10px 12px; margin-bottom: 18px; line-height: 1.5; color: #ffd0d0;
+    }
+    .qrbox {
+      background: #fff; border-radius: 14px; padding: 14px; display: inline-block;
+      margin-bottom: 8px; min-height: 240px; min-width: 240px;
+    }
+    .qrbox img { display: block; width: 220px; height: 220px; }
+    .qrhint { font-size: 12px; opacity: 0.6; margin-bottom: 18px; }
+    .btn {
+      display: block; width: 100%; padding: 16px; border: none; border-radius: 12px;
+      font-size: 17px; font-weight: 800; cursor: pointer; margin-bottom: 12px;
+      text-decoration: none; color: #fff;
+    }
+    .btn.admin { background: linear-gradient(135deg, #7a3aaa, #c060ff); }
+    .btn:active { transform: scale(0.98); }
+    .linkrow { display: flex; gap: 8px; margin-top: 6px; }
+    .linkrow input {
+      flex: 1; padding: 11px; border-radius: 8px; border: 1px solid #6a3a8a;
+      background: #1a0a2a; color: #e0a0ff; font-size: 12px; min-width: 0;
+    }
+    .linkrow button {
+      padding: 11px 14px; border-radius: 8px; border: none; background: #8a4ab0;
+      color: #fff; font-weight: 700; cursor: pointer; white-space: nowrap;
+    }
+    .tips {
+      text-align: left; font-size: 12.5px; opacity: 0.85; margin-top: 20px;
+      background: rgba(0,0,0,0.25); border-radius: 10px; padding: 14px; line-height: 1.7;
+    }
+    .tips b { color: #c060ff; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>👑 Trang ADMIN</h1>
+    <div class="warn">🔒 Trang RIÊNG TƯ — chỉ dành cho bạn. <b>Đừng gửi link/QR này cho ai</b>, kẻo họ có toàn quyền điều khiển game.</div>
+
+    <div class="qrbox"><img id="qr" alt="Mã QR Admin" /></div>
+    <div class="qrhint">📷 Quét bằng điện thoại của BẠN để vào game với quyền admin</div>
+
+    <a class="btn admin" id="adminBtn" href="#">👑 VÀO GAME (ADMIN)</a>
+
+    <div class="linkrow">
+      <input id="linkInput" readonly />
+      <button id="copyBtn">📋 Copy</button>
+    </div>
+
+    <div class="tips">
+      <b>Quyền admin của bạn:</b><br>
+      • Bảng <b>👑 ADMIN</b> góc trên: +tiền, mở hết cần/mồi/thế giới, God mode, spawn Boss.<br>
+      • Nút <b>👥 Xem người chơi</b>: thấy ai đang online (tên, tiền, cá, map).<br>
+      • Với từng người: <b>tặng tiền</b>, <b>mở khóa</b>, <b>💬 nhắn tin</b> hiện lên màn hình họ.<br>
+      • <b>👑 Cấp / ❌ Thu</b> quyền admin cho người khác.<br>
+      <span style="opacity:0.6;">Người chơi thường (link không có ?admin=1) sẽ không thấy các quyền này.</span>
+    </div>
+  </div>
+
+  <script>
+    var origin = location.origin;
+    var adminUrl = origin + '/fishing2d.html?admin=1';   // link ADMIN (toàn quyền)
+
+    document.getElementById('adminBtn').href = adminUrl;
+    document.getElementById('linkInput').value = adminUrl;
+
+    var qr = document.getElementById('qr');
+    qr.src = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=0&data=' + encodeURIComponent(adminUrl);
+    qr.onerror = function () {
+      qr.parentNode.innerHTML = '<div style="color:#18062e;font-size:12px;word-break:break-all;padding:10px;">' + adminUrl + '</div>';
+    };
+
+    document.getElementById('copyBtn').onclick = function () {
+      var inp = document.getElementById('linkInput');
+      inp.select();
+      try { navigator.clipboard.writeText(inp.value); } catch (e) { document.execCommand('copy'); }
+      this.textContent = '✅ Đã copy';
+      var self = this;
+      setTimeout(function () { self.textContent = '📋 Copy'; }, 1500);
+    };
+  </script>
+</body>
+</html>

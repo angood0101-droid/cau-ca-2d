@@ -1,0 +1,12 @@
+{
+  "name": "cau-ca-2d-server",
+  "version": "1.0.0",
+  "description": "Cau Ca 2D fishing game server with admin player management",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=16"
+  }
+}

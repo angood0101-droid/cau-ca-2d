@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🎣 Câu Cá 2D — Chơi trên điện thoại</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: system-ui, sans-serif; color: #fff; min-height: 100vh;
+      background: linear-gradient(160deg, #0a2a4a, #06182e);
+      display: flex; align-items: center; justify-content: center; padding: 20px;
+    }
+    .card {
+      background: rgba(255,255,255,0.06); border: 1px solid #2a5a80;
+      border-radius: 18px; padding: 26px 22px; max-width: 420px; width: 100%;
+      text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    }
+    h1 { font-size: 24px; margin-bottom: 6px; color: #ffcf5f; }
+    .sub { font-size: 13px; opacity: 0.75; margin-bottom: 18px; line-height: 1.5; }
+    .qrbox {
+      background: #fff; border-radius: 14px; padding: 14px; display: inline-block;
+      margin-bottom: 8px; min-height: 240px; min-width: 240px;
+    }
+    .qrbox img { display: block; width: 220px; height: 220px; }
+    .qrhint { font-size: 12px; opacity: 0.6; margin-bottom: 18px; }
+    .btn {
+      display: block; width: 100%; padding: 16px; border: none; border-radius: 12px;
+      font-size: 17px; font-weight: 800; cursor: pointer; margin-bottom: 12px;
+      text-decoration: none; color: #fff;
+    }
+    .btn.play { background: linear-gradient(135deg, #2a8a4a, #40c060); }
+    .btn:active { transform: scale(0.98); }
+    .linkrow { display: flex; gap: 8px; margin-top: 6px; }
+    .linkrow input {
+      flex: 1; padding: 11px; border-radius: 8px; border: 1px solid #3a5a7a;
+      background: #0a1a2a; color: #9cf; font-size: 12px; min-width: 0;
+    }
+    .linkrow button {
+      padding: 11px 14px; border-radius: 8px; border: none; background: #4a8ab0;
+      color: #fff; font-weight: 700; cursor: pointer; white-space: nowrap;
+    }
+    .tips {
+      text-align: left; font-size: 12.5px; opacity: 0.8; margin-top: 20px;
+      background: rgba(0,0,0,0.25); border-radius: 10px; padding: 14px; line-height: 1.7;
+    }
+    .tips b { color: #ffcf5f; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>🎣 Câu Cá 2D</h1>
+    <div class="sub">Quét mã QR bằng camera điện thoại để chơi ngay,<br>hoặc bấm nút bên dưới.</div>
+
+    <div class="qrbox"><img id="qr" alt="Mã QR" /></div>
+    <div class="qrhint">📷 Mở camera → hướng vào mã QR → bấm vào link hiện ra</div>
+
+    <a class="btn play" id="playBtn" href="#">▶️ VÀO GAME</a>
+
+    <div class="linkrow">
+      <input id="linkInput" readonly />
+      <button id="copyBtn">📋 Copy</button>
+    </div>
+
+    <div class="tips">
+      <b>Cách chơi trên điện thoại:</b><br>
+      • <b>Chạm & giữ</b> màn hình để ngắm hướng — <b>thả tay</b> để quăng cần.<br>
+      • Cá cắn câu → bấm giữ nút <b>THU DÂY</b> để kéo cá vào.<br>
+      • Cá kiệt sức → bấm <b>VỚT CÁ</b> để bắt.<br>
+      • Nút <b>🛒 Shop</b> mua cần & mồi, <b>🌍 Thế giới</b> đổi map.<br>
+      • Xoay <b>dọc</b> màn hình chơi cho thoải mái nhất.
+    </div>
+  </div>
+
+  <script>
+    var origin = location.origin;
+    var gameUrl = origin + '/fishing2d.html';   // link NGƯỜI CHƠI (không có quyền admin)
+
+    document.getElementById('playBtn').href = gameUrl;
+    document.getElementById('linkInput').value = gameUrl;
+
+    var qr = document.getElementById('qr');
+    qr.src = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=0&data=' + encodeURIComponent(gameUrl);
+    qr.onerror = function () {
+      qr.parentNode.innerHTML = '<div style="color:#06182e;font-size:12px;word-break:break-all;padding:10px;">' + gameUrl + '</div>';
+    };
+
+    document.getElementById('copyBtn').onclick = function () {
+      var inp = document.getElementById('linkInput');
+      inp.select();
+      try { navigator.clipboard.writeText(inp.value); } catch (e) { document.execCommand('copy'); }
+      this.textContent = '✅ Đã copy';
+      var self = this;
+      setTimeout(function () { self.textContent = '📋 Copy'; }, 1500);
+    };
+  </script>
+</body>
+</html>

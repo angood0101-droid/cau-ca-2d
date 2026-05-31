@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: cau-ca-2d
+    runtime: node
+    plan: free
+    buildCommand: ""
+    startCommand: node server.js
