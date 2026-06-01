@@ -489,6 +489,7 @@ function engageFish(fish) {
   state = 'fighting';
   biteAlert.classList.remove('show');
   tensionWrap.classList.add('show');
+  bobber.visible = false;   // cá đã ngậm mồi → bỏ phao/mồi đi
   tension = 0;
   reelDist = 0;
   const tm = fish.type.tireMax;
@@ -892,9 +893,19 @@ function update(dt) {
     // động lớn là do cá kéo cả lưỡi+dây chạy (xử lý ở phần flee bên dưới).
     f.bob += 0.05;
     const jitter = f.tired ? 1 : (f.struggling ? 4 : 2);
-    // Miệng cá = vị trí lưỡi câu; thân cá rung quanh đó một chút cho có cảm giác giãy.
-    f.x = hook.x + Math.sin(time * 26 + f.bob) * jitter;
-    f.y = hook.y + Math.sin(time * 19 + f.bob) * jitter * 0.6;
+    if (f.tired) {
+      // Cá kiệt sức: treo lủng lẳng ngay tại lưỡi câu
+      f.x = hook.x + Math.sin(time * 20 + f.bob) * jitter;
+      f.y = hook.y + f.size * 0.2;
+    } else {
+      // Lưỡi câu DÍNH CHẶT vào MIỆNG (mỏ) cá: đặt mỏ cá đúng ngay lưỡi câu.
+      // Cá quay đầu (mỏ) về phía cần đang kéo; thân trải về phía sau.
+      const tipM = getRodTip();
+      f.dir = (tipM.x > hook.x) ? 1 : -1;
+      const mouthOff = f.size * 0.95;             // khoảng cách từ tâm cá ra tới mỏ
+      f.x = hook.x - f.dir * mouthOff + Math.sin(time * 26 + f.bob) * jitter;
+      f.y = hook.y + Math.sin(time * 19 + f.bob) * jitter * 0.6;
+    }
 
     // Multi-cycle tiredness: fish must be fully tired (tireMax) times
     if (f.tiredness === undefined) {
@@ -947,22 +958,22 @@ function update(dt) {
         f.struggling = flee;
         f.struggleT = flee ? rand(40, 100) : rand(20, 55);
         if (flee) {
-          // Cá chạy TRÁNH XA đầu cần (ngược hướng reel), pha thêm chút góc
+          // Cá HOẢNG chạy VÒNG VÈO XUNG QUANH — hướng ngẫu nhiên mọi phía
+          // (lúc qua trái, lúc qua phải, lúc lên, lúc xuống) cho sống động.
+          const ang = rand(0, Math.PI * 2);
+          f.fleeDx = Math.cos(ang);
+          f.fleeDy = Math.sin(ang) * 0.7;          // hơi dẹp theo chiều dọc cho tự nhiên
+          // Thiên một chút ra xa đầu cần để cá có xu hướng thoát (không dí sát cần)
           const tipP = getRodTip();
-          const awayX = hook.x - tipP.x;
-          const awayY = hook.y - tipP.y;
+          const awayX = hook.x - tipP.x, awayY = hook.y - tipP.y;
           const aLen = Math.hypot(awayX, awayY) || 1;
-          const angle = rand(-0.6, 0.6); // xoay ±35° so với hướng thẳng ra xa
-          const cosA = Math.cos(angle), sinA = Math.sin(angle);
-          const nx = awayX / aLen, ny = awayY / aLen;
-          // Lệch xuống một chút để cá có xu hướng xuống sâu
-          let fdx = nx * cosA - ny * sinA;
-          let fdy = nx * sinA + ny * cosA + 0.35;
-          const fl = Math.hypot(fdx, fdy) || 1;
-          f.fleeDx = fdx / fl; f.fleeDy = fdy / fl;
+          f.fleeDx += (awayX / aLen) * 0.4;
+          f.fleeDy += (awayY / aLen) * 0.4;
+          const fl = Math.hypot(f.fleeDx, f.fleeDy) || 1;
+          f.fleeDx /= fl; f.fleeDy /= fl;
         } else {
-          // Nghỉ: chỉ drift nhẹ
-          f.fleeDx = rand(-0.2, 0.2); f.fleeDy = 0.25;
+          // Nghỉ: chỉ drift nhẹ ngẫu nhiên
+          f.fleeDx = rand(-0.3, 0.3); f.fleeDy = rand(-0.1, 0.3);
         }
       }
     } else {
@@ -1021,16 +1032,14 @@ function update(dt) {
       hook.x = tipP.x + dirX * minDist;
       hook.y = tipP.y + dirY * minDist;
     }
-    // Constrain hook within water
-    hook.y = clamp(hook.y, waterLevelY() - 20, bottomY() - 10);
+    // Constrain hook within water — KHÔNG cho lên trên mặt nước (cá không "bay").
+    // Trừ lúc đã kiệt sức + đang vớt (mới cho kéo sát mặt nước để vớt lên).
+    const topLimit = f.readyToScoop ? (waterLevelY() + 4) : (waterLevelY() + f.size * 0.8 + 14);
+    hook.y = clamp(hook.y, topLimit, bottomY() - 10);
     hook.x = clamp(hook.x, player.x + 40, W - 20);
 
-    // bobber follows hook on surface (only if visible)
-    if (bobber.visible) {
-      bobber.x = hook.x;
-      const pullUnder = Math.max(0, (hook.y - waterLevelY()) * 0.08);
-      bobber.y = waterLevelY() + Math.min(pullUnder, 20) + Math.sin(time * 15) * 3;
-    }
+    // Đã cắn câu thì mồi nằm trong miệng cá → KHÔNG hiện phao/mồi nữa.
+    bobber.visible = false;
 
     tension = clamp(tension, 0, 1);
     tensionFill.style.height = (tension * 100) + '%';
