@@ -2200,7 +2200,8 @@ function drawHook() {
   ctx.lineTo(0, 4);
   ctx.arc(-3, 4, 3, 0, Math.PI);
   ctx.stroke();
-  drawBait(currentBait);
+  // Đang đánh cá → cá ĐÃ NUỐT mồi → chỉ còn lưỡi câu trần mắc vào mỏ (không vẽ mồi).
+  if (state !== 'fighting') drawBait(currentBait);
   ctx.restore();
 }
 
