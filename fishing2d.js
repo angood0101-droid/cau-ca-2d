@@ -914,9 +914,10 @@ function update(dt) {
     f.bob += 0.05;
     const jitter = f.tired ? 1 : (f.struggling ? 4 : 2);
     if (f.tired) {
-      // Cá kiệt sức: treo lủng lẳng ngay tại lưỡi câu
+      // Cá kiệt sức → xoay DỌC (đầu lên, đuôi xuống). Lưỡi câu phải móc ở MỎ (phía trên).
+      // Khi xoay dọc, mỏ cá nằm phía TRÊN tâm ~1 thân, nên đẩy tâm cá XUỐNG để mỏ trùng lưỡi.
       f.x = hook.x + Math.sin(time * 20 + f.bob) * jitter;
-      f.y = hook.y + f.size * 0.2;
+      f.y = hook.y + f.size * 1.15;
     } else {
       // Lưỡi câu DÍNH CHẶT vào MIỆNG (mỏ) cá: đặt mỏ cá đúng ngay lưỡi câu.
       // Cá quay đầu (mỏ) về phía cần đang kéo; thân trải về phía sau.
