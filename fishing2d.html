@@ -227,6 +227,37 @@
       }
       /* Power meter raised above hint bar */
       #powerWrap { bottom: 62px; }
+
+      /* ===== GỌN GÀNG TRÊN ĐIỆN THOẠI — nút menu thu nhỏ thành icon ===== */
+      /* Các nút menu góc phải: bỏ chữ, chỉ còn emoji vuông nhỏ, xếp sát nhau */
+      #shopBtn, #worldBtn, #voiceBtn, #rewardBtn {
+        width: 44px; height: 44px; padding: 0 !important;
+        font-size: 0 !important;            /* ẩn chữ gốc */
+        display: flex; align-items: center; justify-content: center;
+        border-radius: 10px; right: 8px !important;
+      }
+      #shopBtn   { top: 8px   !important; }
+      #worldBtn  { top: 58px  !important; }
+      #voiceBtn  { top: 108px !important; }
+      #rewardBtn { top: 158px !important; }
+      #shopBtn::before   { content: '🛒'; font-size: 22px; }
+      #worldBtn::before  { content: '🌍'; font-size: 22px; }
+      #voiceBtn::before  { content: '🎤'; font-size: 22px; }
+      #rewardBtn::before { content: '🎁'; font-size: 22px; }
+
+      /* Nút mồi: thu nhỏ, nằm sát mép trái, không chiếm vùng nước */
+      #baitBtn {
+        top: 8px !important; left: auto !important; right: 58px !important;
+        min-width: 0 !important; width: auto; max-width: 130px;
+        padding: 6px 9px !important; font-size: 10px !important;
+        background: rgba(40,20,10,0.7);
+      }
+      #baitBtn .lbl { display: none; }      /* ẩn dòng "Mồi đang dùng" cho gọn */
+      #baitBtn .nm { font-size: 11px; }
+    }
+    /* Màn hình hẹp (điện thoại nhỏ): HUD thu nhỏ thêm để chừa nước */
+    @media (max-width: 480px) {
+      #hud { min-width: 0; max-width: 132px; }
     }
     @media (max-width: 480px) {
       #hud { font-size: 11px; }
@@ -400,6 +431,6 @@
   <div id="toast"></div>
 
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
-  <script src="./fishing2d.js?v=72"></script>
+  <script src="./fishing2d.js?v=73"></script>
 </body>
 </html>
