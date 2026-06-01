@@ -392,6 +392,8 @@ const TREASURE_KINDS = {
 let tension = 0;
 let reelDist = 0; // how close fish is to shore (0=hooked start, 1=caught)
 let biteFishCandidate = null;
+let strikeWindow = 0;   // > 0 nghĩa là cá đang ĐỚP MỒI, người chơi phải GIẬT CẦN để ghim lưỡi
+let strikeMissT = 0;    // đếm ngược sau khi giật hụt (cá nhả mồi, nghỉ một lúc)
 
 let time = 0; // game time for day/night
 const DAY_CYCLE = 180; // seconds for full day
@@ -433,9 +435,9 @@ function onPress() {
     rod.powerDir = 1;
     powerWrap.classList.add('show');
     hintBar.innerHTML = 'Di chuyển chuột để ngắm hướng · Thả <b>CHUỘT</b> khi lực đầy để quăng xa';
-  } else if (state === 'fishing' && biteFishCandidate && hook.biteT > 0.7) {
-    // attempted catch
-    engageFish(biteFishCandidate);
+  } else if (state === 'fishing' && strikeWindow > 0) {
+    // GIẬT CẦN đúng lúc cá đớp → ghim lưỡi vào miệng
+    strikeRod();
   } else if (state === 'fighting') {
     // reeling — handled in update while mouse.down
     mouse.down = true;
@@ -477,6 +479,19 @@ function onRelease() {
   }
 }
 
+// ⚡ Giật cần — khi cá đang đớp mồi, ghim lưỡi câu vào miệng cá rồi vào trận kéo.
+function strikeRod() {
+  if (state !== 'fishing' || strikeWindow <= 0 || !biteFishCandidate) return;
+  strikeWindow = 0;
+  rod.angle -= 0.5;            // hất cần lên cho cảm giác giật
+  // Bọt nước bắn lên tại lưỡi câu (cá giật mình)
+  for (let i = 0; i < 14; i++) {
+    particles.push({ x: hook.x, y: hook.y, vx: rand(-4, 4), vy: rand(-6, -1), life: 28, col: '#ffe080' });
+  }
+  showToast('🎯 GIẬT TRÚNG! Lưỡi câu ghim chặt vào miệng!');
+  engageFish(biteFishCandidate);
+}
+
 function engageFish(fish) {
   fish.onHook = true;
   fish.tiredness = 0;
@@ -488,6 +503,8 @@ function engageFish(fish) {
   fish.struggleT = rand(40, 80);
   hook.onFish = fish;
   state = 'fighting';
+  strikeWindow = 0; strikeMissT = 0;
+  biteAlert.innerHTML = '🐟 CÁ ĐANG CẮN CÂU! GIỮ CHUỘT KÉO!';
   biteAlert.classList.remove('show');
   tensionWrap.classList.add('show');
   bobber.visible = false;   // cá đã ngậm mồi → bỏ phao/mồi đi
@@ -515,6 +532,7 @@ function resetToIdle() {
   hook.onFish = null;
   biteFishCandidate = null;
   hook.biteT = 0;
+  strikeWindow = 0; strikeMissT = 0;
   tension = 0;
   reelDist = 0;
   bobber.visible = false;
@@ -541,6 +559,13 @@ function cutLine() {
 const btnCut = document.getElementById('btnCut');
 if (btnCut) btnCut.addEventListener('click', cutLine);
 addEventListener('keydown', e => { if (e.key.toLowerCase() === 'c') cutLine(); });
+// Phím Space (hoặc J) = giật cần khi cá đớp mồi
+addEventListener('keydown', e => {
+  if ((e.key === ' ' || e.key.toLowerCase() === 'j') && state === 'fishing' && strikeWindow > 0) {
+    e.preventDefault();
+    strikeRod();
+  }
+});
 
 let pendingCatch = null; // { value, weightKg, name } — chờ user chọn bán hay nấu
 function catchFish(fish) {
@@ -885,22 +910,38 @@ function update(dt) {
         f.y += dy / ln * approachSpeed;
         f.dir = dx > 0 ? 1 : -1;
       }
-      if (d < 35 && f.interest > 0.6) {
+      // Vừa giật hụt → cá nghỉ, không đớp lại ngay
+      if (strikeMissT > 0) { strikeMissT -= 0.016; }
+      if (d < 35 && f.interest > 0.6 && strikeMissT <= 0) {
         hook.biteT += 0.015;
         bobber.wobble = Math.sin(time * 20) * (4 + hook.biteT * 6);
-        if (hook.biteT > 0.25 && !biteAlert.classList.contains('show')) {
-          biteAlert.classList.add('show');
-        }
-        if (hook.biteT > 1) {
-          engageFish(f);
+        // Cá ĐÃ cắn mồi → MỞ CỬA SỔ GIẬT CẦN (người chơi phải giật để ghim lưỡi)
+        if (hook.biteT > 0.4) {
+          if (strikeWindow <= 0) {
+            strikeWindow = 1.1;  // có ~1.1 giây để giật cần kịp
+            biteAlert.classList.add('show');
+            biteAlert.innerHTML = '⚡ CÁ ĐỚP MỒI! GIẬT CẦN NGAY! (chạm / Space)';
+          }
         }
       } else {
         hook.biteT = Math.max(0, hook.biteT - 0.005);
-        if (hook.biteT < 0.1) biteAlert.classList.remove('show');
+        if (hook.biteT < 0.1 && strikeWindow <= 0) biteAlert.classList.remove('show');
       }
     } else {
       hook.biteT = Math.max(0, hook.biteT - 0.01);
-      biteAlert.classList.remove('show');
+      if (strikeWindow <= 0) biteAlert.classList.remove('show');
+    }
+
+    // Đếm ngược cửa sổ giật cần — hết giờ mà không giật thì cá nhả mồi bơi đi
+    if (strikeWindow > 0) {
+      strikeWindow -= 0.016;
+      if (strikeWindow <= 0) {
+        biteAlert.classList.remove('show');
+        hook.biteT = 0;
+        strikeMissT = 1.5;   // cá cảnh giác, nghỉ 1.5s
+        if (biteFishCandidate) biteFishCandidate.interest *= 0.4;
+        showToast('🐟 Cá nhả mồi mất rồi — giật cần chậm quá!');
+      }
     }
   }
 
