@@ -297,6 +297,7 @@ const FISH_TYPES = [
   { id: 'mucKhong', name: 'Mực khổng lồ',    bodyCol: '#c04060', bellyCol: '#ff90b0', backCol: '#701030', finCol: '#a02040', size: 80, speed: 2.2, rarity: 2,   value: 60000,  strength: 9.5, minD: 0.5, maxD: 1.0,  rare: true,  likes: ['blood', 'soul', 'divine'], shape: 'squid',   tireMax: 11, wMin: 400.0, wMax: 2500.0, lMin: 500, lMax: 1300 },
   { id: 'rongBien', name: 'Rồng Biển Sâu',   bodyCol: '#10c0a0', bellyCol: '#80ffe0', backCol: '#085040', finCol: '#00ffc0', size: 90, speed: 2.8, rarity: 0.8, value: 300000, strength: 16.0, minD: 0.6, maxD: 1.0, rare: true,  likes: ['magic', 'divine', 'infinity'], shape: 'arowana', tireMax: 13, wMin: 2000.0, wMax: 8000.0, lMin: 800, lMax: 1500 },
   { id: 'thanVuc',  name: 'Thần Vực Thẳm',   bodyCol: '#ff40c0', bellyCol: '#ffa0e0', backCol: '#a00080', finCol: '#ff80ff', size: 100, speed: 3.2, rarity: 0.3, value: 1000000, strength: 22.0, minD: 0.7, maxD: 1.0, rare: true, likes: ['divine', 'infinity', 'cosmic'], shape: 'arapaima', tireMax: 16, wMin: 5000.0, wMax: 20000.0, lMin: 1000, lMax: 2000 },
+  { id: 'tomKhong', name: 'Tôm Khổng Lồ',    bodyCol: '#ff6030', bellyCol: '#ffb080', backCol: '#a03010', finCol: '#ff8040', size: 70, speed: 2.0, rarity: 3,  value: 120000,  strength: 8.0, minD: 0.5, maxD: 1.0, rare: true, likes: ['shrimp', 'blood', 'divine'], shape: 'shrimp', tireMax: 9, wMin: 200.0, wMax: 1200.0, lMin: 300, lMax: 700 },
 ];
 
 // ===== 5 Worlds — mỗi world có 1 boss iconic =====
@@ -310,7 +311,7 @@ const WORLDS = [
   { id: 'bigpond',     name: 'Hồ Lớn Bắc Bộ',    desc: 'BOSS: Cá Lóc Bông 600kg · Cá to ~8💎/con',  unlockAt: 250000,  gemBase: 8,  boss: 'locbong',  skyTop: '#90b8d0', skyBot: '#e0f0f0', waterTop: '#4a80a8', waterBot: '#0a2040', spawns: ['me', 'tram', 'chep', 'tre', 'nheo', 'mevinh', 'tramden', 'tramtrang', 'locbong'] },
   { id: 'ocean',       name: 'Biển Khơi Sâu',    desc: '🔒 mở bằng 💎 · Cá khổng lồ ~10💎/con',  unlockAt: 0, gemUnlock: 500, gemBase: 10, boss: 'maptrang', skyTop: '#2a5080', skyBot: '#6090b8', waterTop: '#1a4870', waterBot: '#02081a', spawns: ['map', 'mapbo', 'maptrang', 'mukhong', 'kiem', 'ngu', 'mat', 'voi', 'duoi'] },
   { id: 'arctic',      name: 'Sông Băng Bắc Cực', desc: '❄️ Xứ lạnh — Cá voi trắng, Quái Băng · ~13💎/con', unlockAt: 0, gemUnlock: 1200, gemBase: 13, boss: 'voiTrang', skyTop: '#a0c8e0', skyBot: '#e8f4ff', waterTop: '#5a8ab0', waterBot: '#0a2840', spawns: ['tuyet', 'hoiBac', 'kiemBang', 'voiTrang', 'quaiBang'] },
-  { id: 'abyss',       name: 'Vực Thẳm Phát Sáng', desc: '🌌 ĐẢO CUỐI CÙNG — Thần Vực Thẳm · ~16💎/con', unlockAt: 0, gemUnlock: 3000, gemBase: 16, boss: 'thanVuc', skyTop: '#0a0020', skyBot: '#2a0a40', waterTop: '#1a0840', waterBot: '#000010', spawns: ['denLong', 'ranBien', 'mucKhong', 'rongBien', 'thanVuc'] },
+  { id: 'abyss',       name: 'Vực Thẳm Phát Sáng', desc: '🌌 ĐẢO CUỐI CÙNG — Thần Vực Thẳm + Tôm Khổng Lồ · ~16💎/con', unlockAt: 0, gemUnlock: 3000, gemBase: 16, boss: 'thanVuc', skyTop: '#0a0020', skyBot: '#2a0a40', waterTop: '#1a0840', waterBot: '#000010', spawns: ['denLong', 'ranBien', 'mucKhong', 'rongBien', 'thanVuc', 'tomKhong'] },
 ];
 let currentWorld = 'pond';
 let ownedWorlds = ['pond', 'island']; // các thế giới đã mở khóa (pond + island free)
@@ -3560,6 +3561,71 @@ function drawFish(f) {
     ctx.restore();
     // Mắt to phát sáng
     drawEye(s * 0.35, -s * 0.2, s * 0.18, s * 0.03);
+  } else if (shape === 'shrimp') {
+    // 🦐 Tôm khổng lồ — thân cong nhiều đốt, càng, râu dài, đuôi xòe quạt
+    // Râu dài uốn lượn (phía đầu, hướng +x)
+    ctx.strokeStyle = back; ctx.lineWidth = Math.max(1, s * 0.03);
+    for (let k = -1; k <= 1; k += 2) {
+      const sway = Math.sin(time * 3 + k) * s * 0.3;
+      ctx.beginPath();
+      ctx.moveTo(s * 0.9, k * s * 0.1);
+      ctx.quadraticCurveTo(s * 1.7, k * s * 0.4 + sway, s * 2.4, k * s * 0.2 + sway);
+      ctx.stroke();
+    }
+    // Chân bơi nhỏ phía dưới bụng
+    ctx.strokeStyle = back; ctx.lineWidth = Math.max(1, s * 0.04);
+    for (let i = 0; i < 5; i++) {
+      const lx = s * 0.5 - i * s * 0.3;
+      const lsw = Math.sin(time * 6 + i) * s * 0.08;
+      ctx.beginPath();
+      ctx.moveTo(lx, s * 0.35);
+      ctx.lineTo(lx + lsw, s * 0.62);
+      ctx.stroke();
+    }
+    // Thân cong nhiều đốt (bụng tôm) — vẽ bằng cung tròn
+    const bodyGrad = ctx.createLinearGradient(0, -s * 0.5, 0, s * 0.5);
+    bodyGrad.addColorStop(0, belly); bodyGrad.addColorStop(0.5, bc); bodyGrad.addColorStop(1, back);
+    ctx.fillStyle = bodyGrad;
+    ctx.beginPath();
+    ctx.moveTo(s * 0.9, -s * 0.35);                       // đầu (hướng bơi)
+    ctx.quadraticCurveTo(-s * 0.3, -s * 0.55, -s * 1.0, -s * 0.1);
+    ctx.quadraticCurveTo(-s * 1.4, s * 0.3, -s * 0.9, s * 0.55);
+    ctx.quadraticCurveTo(-s * 0.3, s * 0.2, s * 0.3, s * 0.35);
+    ctx.quadraticCurveTo(s * 0.8, s * 0.25, s * 0.9, -s * 0.35);
+    ctx.closePath(); ctx.fill();
+    // Vạch đốt trên lưng tôm
+    ctx.strokeStyle = back; ctx.lineWidth = Math.max(1, s * 0.05);
+    for (let i = 0; i < 5; i++) {
+      const t = i / 5;
+      const ex = lerp(s * 0.5, -s * 0.9, t);
+      const ey = lerp(-s * 0.4, s * 0.1, t);
+      ctx.beginPath();
+      ctx.arc(ex, ey, s * (0.42 - t * 0.1), Math.PI * 0.15, Math.PI * 0.85);
+      ctx.stroke();
+    }
+    // Đuôi xòe quạt (phía sau, -x)
+    ctx.fillStyle = fin;
+    for (let k = -2; k <= 2; k++) {
+      ctx.beginPath();
+      ctx.moveTo(-s * 0.9, s * 0.45);
+      ctx.lineTo(-s * 1.5, s * 0.45 + k * s * 0.22);
+      ctx.lineTo(-s * 1.35, s * 0.55 + k * s * 0.22);
+      ctx.closePath(); ctx.fill();
+    }
+    // Càng tôm (2 cái phía đầu)
+    ctx.strokeStyle = bc; ctx.lineWidth = Math.max(2, s * 0.1);
+    ctx.fillStyle = bc;
+    for (let k = -1; k <= 1; k += 2) {
+      const cy = k * s * 0.18;
+      ctx.beginPath();
+      ctx.moveTo(s * 0.7, cy);
+      ctx.quadraticCurveTo(s * 1.3, cy + k * s * 0.3, s * 1.5, cy + k * s * 0.05);
+      ctx.stroke();
+      // kẹp càng
+      ctx.beginPath(); ctx.ellipse(s * 1.5, cy + k * s * 0.05, s * 0.16, s * 0.09, k * 0.4, 0, Math.PI * 2); ctx.fill();
+    }
+    // Mắt to lồi
+    drawEye(s * 0.75, -s * 0.22, s * 0.13, s * 0.02);
   } else {
     // Fallback basic
     ctx.fillStyle = bc;
