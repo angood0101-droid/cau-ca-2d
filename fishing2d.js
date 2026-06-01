@@ -291,12 +291,12 @@ const FISH_TYPES = [
 const WORLDS = [
   { id: 'pond',        name: 'Hồ Làng',          desc: 'Nước ngọt — cá nhỏ cho người mới', unlockAt: 0,     boss: null,      skyTop: '#6ab0ff', skyBot: '#b0dfff', waterTop: '#3a90c0', waterBot: '#0a3060', spawns: ['tri', 'ro', 'vang', 'hong'] },
   { id: 'island',      name: 'Đảo Hoang (Sinh Tồn)', desc: 'MIỄN PHÍ — ăn cá để không đói!', unlockAt: 0, boss: null, skyTop: '#f0b080', skyBot: '#ffe0a0', waterTop: '#4080a8', waterBot: '#0a1840', spawns: ['tri', 'ro', 'vang', 'hong', 'me', 'mevinh', 'tre', 'chep'] },
-  { id: 'mekong',      name: 'Sông Mekong',      desc: 'BOSS: Cá Nheo khổng lồ',           unlockAt: 500,   boss: 'nheo',    skyTop: '#7fbfa0', skyBot: '#c0e0a0', waterTop: '#4a8a5a', waterBot: '#0a3020', spawns: ['hong', 'tre', 'loc', 'xanh', 'mevinh', 'tramtrang'] },
-  { id: 'amazon',      name: 'Sông Amazon',      desc: 'BOSS: Cá Hồng Vĩ đuôi đỏ + Cá lóc bông', unlockAt: 5000, boss: 'hongvi', skyTop: '#5a7040', skyBot: '#a0c080', waterTop: '#3a6a40', waterBot: '#0a200a', spawns: ['tre', 'loc', 'nheo', 'xanh', 'locbong'] },
-  { id: 'mississippi', name: 'Đầm Mississippi',  desc: 'BOSS: Cá Sấu Hỏa Tiển',            unlockAt: 25000, boss: 'sau',     skyTop: '#b0a070', skyBot: '#d0c080', waterTop: '#6a5a30', waterBot: '#201810', spawns: ['nheo', 'hongvi', 'map', 'duoi'] },
-  { id: 'primal',      name: 'Biển Cổ Đại',      desc: 'BOSS: Cá Hải Tượng + Cá Rồng',     unlockAt: 100000, boss: 'haituong', skyTop: '#7a4ad0', skyBot: '#d0a0ff', waterTop: '#4a2080', waterBot: '#10052a', spawns: ['haituong', 'sau', 'rong', 'map', 'vangthan'] },
-  { id: 'bigpond',     name: 'Hồ Lớn Bắc Bộ',    desc: 'BOSS: Cá Lóc Bông 600kg + Cá Mè',  unlockAt: 250000,  boss: 'locbong',  skyTop: '#90b8d0', skyBot: '#e0f0f0', waterTop: '#4a80a8', waterBot: '#0a2040', spawns: ['me', 'tram', 'chep', 'tre', 'nheo', 'mevinh', 'tramden', 'tramtrang', 'locbong'] },
-  { id: 'ocean',       name: 'Biển Khơi Sâu',    desc: 'BOSS: Cá Mập Trắng 900kg + quái',  unlockAt: 1000000, boss: 'maptrang', skyTop: '#2a5080', skyBot: '#6090b8', waterTop: '#1a4870', waterBot: '#02081a', spawns: ['map', 'mapbo', 'maptrang', 'mukhong', 'kiem', 'ngu', 'mat', 'voi', 'duoi'] },
+  { id: 'mekong',      name: 'Sông Mekong',      desc: 'BOSS: Cá Nheo khổng lồ',           unlockAt: 500,   gemBase: 1,  boss: 'nheo',    skyTop: '#7fbfa0', skyBot: '#c0e0a0', waterTop: '#4a8a5a', waterBot: '#0a3020', spawns: ['hong', 'tre', 'loc', 'xanh', 'mevinh', 'tramtrang'] },
+  { id: 'amazon',      name: 'Sông Amazon',      desc: 'BOSS: Cá Hồng Vĩ đuôi đỏ + Cá lóc bông', unlockAt: 5000, gemBase: 2, boss: 'hongvi', skyTop: '#5a7040', skyBot: '#a0c080', waterTop: '#3a6a40', waterBot: '#0a200a', spawns: ['tre', 'loc', 'nheo', 'xanh', 'locbong'] },
+  { id: 'mississippi', name: 'Đầm Mississippi',  desc: 'BOSS: Cá Sấu Hỏa Tiển',            unlockAt: 25000, gemBase: 4,  boss: 'sau',     skyTop: '#b0a070', skyBot: '#d0c080', waterTop: '#6a5a30', waterBot: '#201810', spawns: ['nheo', 'hongvi', 'map', 'duoi'] },
+  { id: 'primal',      name: 'Biển Cổ Đại',      desc: 'BOSS: Cá Hải Tượng + Cá Rồng · Cá to ~6💎/con',     unlockAt: 100000, gemBase: 6,  boss: 'haituong', skyTop: '#7a4ad0', skyBot: '#d0a0ff', waterTop: '#4a2080', waterBot: '#10052a', spawns: ['haituong', 'sau', 'rong', 'map', 'vangthan'] },
+  { id: 'bigpond',     name: 'Hồ Lớn Bắc Bộ',    desc: 'BOSS: Cá Lóc Bông 600kg · Cá to ~8💎/con',  unlockAt: 250000,  gemBase: 8,  boss: 'locbong',  skyTop: '#90b8d0', skyBot: '#e0f0f0', waterTop: '#4a80a8', waterBot: '#0a2040', spawns: ['me', 'tram', 'chep', 'tre', 'nheo', 'mevinh', 'tramden', 'tramtrang', 'locbong'] },
+  { id: 'ocean',       name: 'Biển Khơi Sâu',    desc: '🔒 ĐẢO CUỐI — mở bằng 💎 · Cá khổng lồ ~10💎/con',  unlockAt: 0, gemUnlock: 500, gemBase: 10, boss: 'maptrang', skyTop: '#2a5080', skyBot: '#6090b8', waterTop: '#1a4870', waterBot: '#02081a', spawns: ['map', 'mapbo', 'maptrang', 'mukhong', 'kiem', 'ngu', 'mat', 'voi', 'duoi'] },
 ];
 let currentWorld = 'pond';
 let ownedWorlds = ['pond', 'island']; // các thế giới đã mở khóa (pond + island free)
@@ -306,6 +306,20 @@ function worldObj() { return WORLDS.find(w => w.id === currentWorld); }
 // ===== State =====
 let state = 'idle'; // idle, charging, casting, fishing, fighting, broken
 let money = 50000;
+let diamonds = 0; // 💎 Kim cương — tiền quý hiếm, dùng mua cần xịn. Kiếm bằng câu cá hiếm.
+try { diamonds = parseInt(localStorage.getItem('cauca2d_diamonds')) || 0; } catch (e) {}
+function saveDiamonds() { try { localStorage.setItem('cauca2d_diamonds', diamonds.toString()); } catch (e) {} }
+// Số kim cương cần để mua cần xịn (chỉ áp dụng cho cần cao cấp, price >= 150000đ).
+const GEM_ROD_PRICES = [10, 18, 30, 50, 80, 130, 200, 320, 500, 800, 1300, 2000];
+function rodGemPrice(rodIndex) {
+  // Cần thường (rẻ) -> 0 (mua bằng tiền). Cần xịn -> trả bằng kim cương.
+  const FIRST_GEM_ROD = 7; // index 'Cần thần kim cương' trở đi
+  if (rodIndex < FIRST_GEM_ROD) return 0;
+  return GEM_ROD_PRICES[rodIndex - FIRST_GEM_ROD] || 3000;
+}
+// Mồi xịn (từ 'diamond' trở lên) mua bằng 💎 kim cương.
+const GEM_BAITS = { diamond: 8, blood: 15, angel: 30, electric: 55, magic: 90, soul: 150, divine: 250, infinity: 400, ancient: 650, absolute: 1000, cosmic: 1800 };
+function baitGemPrice(baitId) { return GEM_BAITS[baitId] || 0; }
 let caughtCount = 0;
 let rareCount = 0;
 let ownedRods = [0]; // indexes of owned rods
@@ -507,10 +521,26 @@ function catchFish(fish) {
   const value = Math.floor(t.value * valueMult);
   const lenCm = Math.floor(lerp(t.lMin, t.lMax, normWeight * 0.8 + Math.random() * 0.2));
   const foodPts = Math.min(90, 10 + Math.sqrt(weightRaw) * 5);
+  // 💎 Kim cương: đảo càng cao cấp (cá càng to) → câu được càng NHIỀU kim cương.
+  // Mỗi đảo có mức thưởng nền (gemBase). Cá hiếm/to được thêm bonus.
+  const wIdx = WORLDS.findIndex(w => w.id === currentWorld);
+  const gemBase = WORLDS[wIdx] && WORLDS[wIdx].gemBase ? WORLDS[wIdx].gemBase : 0;
+  let gemGain = 0;
+  if (gemBase > 0) {
+    // Thưởng nền của đảo + bonus theo độ to con cá; cá hiếm gấp đôi.
+    gemGain = gemBase + Math.floor(normWeight * gemBase * 0.8);
+    if (t.rare) gemGain = Math.round(gemGain * 1.8);
+  } else {
+    // Đảo thấp (Hồ Làng): chỉ cá hiếm mới có ít kim cương.
+    if (t.rare) gemGain = 1 + Math.floor(normWeight * 1.5);
+    else if (Math.random() < 0.05) gemGain = 1;
+  }
+  if (gemGain > 0) { diamonds += gemGain; saveDiamonds(); }
   catchName.textContent = t.name;
   const lenDisplay = lenCm >= 100 ? (lenCm / 100).toFixed(lenCm >= 1000 ? 0 : 1) + ' m' : lenCm + ' cm';
   catchSize.textContent = `Cân nặng: ${weightKg}kg · Dài: ${lenDisplay}`;
-  catchReward.textContent = '💰 Bán: +' + value + 'đ  ·  🍖 Nấu: +' + Math.floor(foodPts) + ' đói';
+  catchReward.textContent = '💰 Bán: +' + value + 'đ  ·  🍖 Nấu: +' + Math.floor(foodPts) + ' đói' + (gemGain > 0 ? '  ·  💎 +' + gemGain : '');
+  if (gemGain > 0) showToast('💎 +' + gemGain + ' kim cương!');
   pendingCatch = { value, foodPts: Math.floor(foodPts), name: t.name };
   catchPopup.classList.add('show');
   const idx = fishes.indexOf(fish);
@@ -3592,8 +3622,10 @@ function drawFish(f) {
 }
 
 // ===== HUD / shop =====
+const diamondsEl = document.getElementById('diamonds');
 function updateHUD() {
   moneyEl.textContent = money.toLocaleString('vi-VN') + 'đ';
+  if (diamondsEl) diamondsEl.textContent = diamonds.toLocaleString('vi-VN');
   caughtEl.textContent = caughtCount;
   rareEl.textContent = rareCount;
   rodNameEl.textContent = RODS[currentRod].name;
@@ -3746,18 +3778,30 @@ function renderRodList() {
   RODS.forEach((r, i) => {
     const owned = ownedRods.includes(i);
     const current = i === currentRod;
+    const gemPrice = rodGemPrice(i);          // > 0 nghĩa là cần XỊN, mua bằng 💎
+    const useGem = gemPrice > 0;
+    const priceLabel = useGem ? ('💎 ' + gemPrice) : (r.price > 0 ? r.price.toLocaleString('vi-VN') + 'đ' : 'Miễn phí');
     const row = document.createElement('div');
     row.className = 'rodItem' + (current ? ' current' : (owned ? ' owned' : ''));
     row.innerHTML = `
       <div class="info">
-        <div class="nm">${r.name}${current ? ' ⭐' : ''}</div>
-        <div class="stats">Lực: ${r.maxPower} · Quấn: ${Math.round(r.reelSpeed * 1000) / 10} · Bền: ${r.strength.toFixed(1)}× ${r.price > 0 ? '· ' + r.price + 'đ' : ''}</div>
+        <div class="nm">${r.name}${current ? ' ⭐' : ''}${useGem ? ' 💎' : ''}</div>
+        <div class="stats">Lực: ${r.maxPower} · Quấn: ${Math.round(r.reelSpeed * 1000) / 10} · Bền: ${r.strength.toFixed(1)}× · ${priceLabel}</div>
       </div>`;
     const btn = document.createElement('button');
     if (current) { btn.textContent = 'Đang dùng'; btn.disabled = true; }
     else if (owned) { btn.textContent = 'Chọn'; btn.onclick = () => { currentRod = i; updateHUD(); renderRodList(); showToast('Đổi cần: ' + r.name); }; }
-    else {
-      btn.textContent = 'Mua ' + r.price + 'đ';
+    else if (useGem) {
+      btn.textContent = '💎 ' + gemPrice;
+      btn.disabled = diamonds < gemPrice;
+      btn.onclick = () => {
+        if (diamonds < gemPrice) { showToast('Không đủ kim cương! Câu cá ở đảo cao để kiếm 💎'); return; }
+        diamonds -= gemPrice; saveDiamonds(); ownedRods.push(i); currentRod = i;
+        updateHUD(); renderRodList();
+        showToast('Đã mua ' + r.name + ' bằng 💎!');
+      };
+    } else {
+      btn.textContent = 'Mua ' + (r.price > 0 ? r.price + 'đ' : '');
       btn.disabled = money < r.price;
       btn.onclick = () => {
         if (money < r.price) return;
@@ -3776,20 +3820,32 @@ function renderBaitList() {
   BAITS.forEach(b => {
     const owned = ownedBaits.includes(b.id);
     const current = b.id === currentBait;
+    const gemPrice = baitGemPrice(b.id);     // > 0 = mồi XỊN, mua bằng 💎
+    const useGem = gemPrice > 0;
+    const priceLabel = useGem ? ('💎 ' + gemPrice) : (b.price > 0 ? b.price.toLocaleString('vi-VN') + 'đ' : 'Miễn phí');
     const row = document.createElement('div');
     row.className = 'baitItem' + (current ? ' current' : (owned ? ' owned' : ''));
     const attr = b.attractsRare > 0 ? ` · hiếm +${(b.attractsRare * 100).toFixed(0)}%` : '';
     row.innerHTML = `
       <div class="icon">${b.emoji}</div>
       <div class="info" style="flex:1;">
-        <div class="nm" style="font-weight:700;color:#9cf;">${b.name}${current ? ' ⭐' : ''}</div>
-        <div class="stats" style="font-size:12px;opacity:0.75;">Lực hút: ${b.attractPower.toFixed(1)}×${attr} ${b.price > 0 ? '· ' + b.price + 'đ' : ''}</div>
+        <div class="nm" style="font-weight:700;color:#9cf;">${b.name}${current ? ' ⭐' : ''}${useGem ? ' 💎' : ''}</div>
+        <div class="stats" style="font-size:12px;opacity:0.75;">Lực hút: ${b.attractPower.toFixed(1)}×${attr} · ${priceLabel}</div>
       </div>`;
     const btn = document.createElement('button');
     if (current) { btn.textContent = 'Đang dùng'; btn.disabled = true; }
     else if (owned) { btn.textContent = 'Chọn'; btn.onclick = () => { currentBait = b.id; updateBaitUI(); renderBaitList(); showToast('Đổi mồi: ' + b.name); }; }
-    else {
-      btn.textContent = 'Mua ' + b.price + 'đ';
+    else if (useGem) {
+      btn.textContent = '💎 ' + gemPrice;
+      btn.disabled = diamonds < gemPrice;
+      btn.onclick = () => {
+        if (diamonds < gemPrice) { showToast('Không đủ kim cương! Câu cá ở đảo cao để kiếm 💎'); return; }
+        diamonds -= gemPrice; saveDiamonds(); ownedBaits.push(b.id); currentBait = b.id;
+        updateHUD(); updateBaitUI(); renderBaitList();
+        showToast('Đã mua ' + b.name + ' bằng 💎!');
+      };
+    } else {
+      btn.textContent = 'Mua ' + (b.price > 0 ? b.price + 'đ' : '');
       btn.disabled = money < b.price;
       btn.onclick = () => {
         if (money < b.price) return;
@@ -3823,17 +3879,19 @@ function openWorldPanel() {
   worldList.innerHTML = '';
   WORLDS.forEach(w => {
     const owned = ownedWorlds.includes(w.id);
-    const canBuy = !owned && money >= w.unlockAt;
+    const useGem = w.gemUnlock > 0;                 // đảo cuối: mở bằng 💎 kim cương
+    const canBuy = !owned && (useGem ? diamonds >= w.gemUnlock : money >= w.unlockAt);
     const current = w.id === currentWorld;
     const row = document.createElement('div');
     const bg = current ? '#302a1a' : (owned ? '#1a3020' : (canBuy ? '#2a2a40' : '#2a1818'));
     const bd = current ? '#ffcf5f' : (owned ? '#40ff80' : (canBuy ? '#6a80ff' : '#6a3030'));
     row.style.cssText = `display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:${bg};border:1px solid ${bd};border-radius:8px;margin-bottom:10px;`;
+    const lockLabel = useGem ? `💎 ${w.gemUnlock} kim cương` : `${w.unlockAt.toLocaleString('vi-VN')}đ`;
     row.innerHTML = `
       <div style="flex:1;">
         <div style="font-weight:700;color:#9cf;font-size:15px;">${w.name}${current ? ' ⭐' : ''}${owned && !current ? ' ✓' : ''}</div>
         <div style="font-size:12px;opacity:0.8;margin-top:3px;">${w.desc}</div>
-        ${!owned ? `<div style="font-size:11px;color:${canBuy ? '#ffcf5f' : '#f88'};margin-top:3px;">🔒 Mở khóa: ${w.unlockAt.toLocaleString('vi-VN')}đ</div>` : ''}
+        ${!owned ? `<div style="font-size:11px;color:${canBuy ? '#7af0ff' : '#f88'};margin-top:3px;">🔒 Mở khóa: ${lockLabel}</div>` : ''}
       </div>`;
     const btn = document.createElement('button');
     btn.style.cssText = 'padding:9px 16px;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:700;min-width:110px;';
@@ -3843,18 +3901,23 @@ function openWorldPanel() {
       btn.textContent = 'Đến đây'; btn.style.background = '#2a6aaa';
       btn.onclick = () => switchWorld(w);
     } else if (canBuy) {
-      btn.textContent = '💳 Mua ' + w.unlockAt.toLocaleString('vi-VN') + 'đ';
-      btn.style.background = '#2a8a3a';
+      btn.textContent = useGem ? ('💎 Mua ' + w.gemUnlock) : ('💳 Mua ' + w.unlockAt.toLocaleString('vi-VN') + 'đ');
+      btn.style.background = useGem ? '#2a7a9a' : '#2a8a3a';
       btn.onclick = () => {
-        if (money < w.unlockAt) { showToast('Không đủ tiền!'); return; }
-        money -= w.unlockAt;
+        if (useGem) {
+          if (diamonds < w.gemUnlock) { showToast('Không đủ kim cương!'); return; }
+          diamonds -= w.gemUnlock; saveDiamonds();
+        } else {
+          if (money < w.unlockAt) { showToast('Không đủ tiền!'); return; }
+          money -= w.unlockAt;
+        }
         ownedWorlds.push(w.id);
         updateHUD();
         showToast('Đã mở khóa ' + w.name + ' 🎉');
         switchWorld(w);
       };
     } else {
-      btn.textContent = 'Chưa đủ tiền'; btn.disabled = true; btn.style.background = '#555';
+      btn.textContent = useGem ? 'Chưa đủ 💎' : 'Chưa đủ tiền'; btn.disabled = true; btn.style.background = '#555';
     }
     row.appendChild(btn);
     worldList.appendChild(row);
@@ -3917,6 +3980,9 @@ if (isAdmin) {
   };
   document.getElementById('admBillion').onclick = () => {
     money += 1000000000; updateHUD(); showToast('+1.000.000.000đ (1 tỷ) 💰💰💰');
+  };
+  document.getElementById('admGems').onclick = () => {
+    diamonds += 1000; saveDiamonds(); updateHUD(); showToast('+1000 💎 kim cương');
   };
   document.getElementById('admRods').onclick = () => {
     ownedRods = RODS.map((_, i) => i);
