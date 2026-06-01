@@ -297,7 +297,7 @@ const FISH_TYPES = [
   { id: 'mucKhong', name: 'Mực khổng lồ',    bodyCol: '#c04060', bellyCol: '#ff90b0', backCol: '#701030', finCol: '#a02040', size: 80, speed: 2.2, rarity: 2,   value: 60000,  strength: 9.5, minD: 0.5, maxD: 1.0,  rare: true,  likes: ['blood', 'soul', 'divine'], shape: 'squid',   tireMax: 11, wMin: 400.0, wMax: 2500.0, lMin: 500, lMax: 1300 },
   { id: 'rongBien', name: 'Rồng Biển Sâu',   bodyCol: '#10c0a0', bellyCol: '#80ffe0', backCol: '#085040', finCol: '#00ffc0', size: 90, speed: 2.8, rarity: 0.8, value: 300000, strength: 16.0, minD: 0.6, maxD: 1.0, rare: true,  likes: ['magic', 'divine', 'infinity'], shape: 'arowana', tireMax: 13, wMin: 2000.0, wMax: 8000.0, lMin: 800, lMax: 1500 },
   { id: 'thanVuc',  name: 'Thần Vực Thẳm',   bodyCol: '#ff40c0', bellyCol: '#ffa0e0', backCol: '#a00080', finCol: '#ff80ff', size: 100, speed: 3.2, rarity: 0.3, value: 1000000, strength: 22.0, minD: 0.7, maxD: 1.0, rare: true, likes: ['divine', 'infinity', 'cosmic'], shape: 'arapaima', tireMax: 16, wMin: 5000.0, wMax: 20000.0, lMin: 1000, lMax: 2000 },
-  { id: 'tomKhong', name: 'Tôm Khổng Lồ',    bodyCol: '#ff6030', bellyCol: '#ffb080', backCol: '#a03010', finCol: '#ff8040', size: 70, speed: 2.0, rarity: 3,  value: 120000,  strength: 8.0, minD: 0.5, maxD: 1.0, rare: true, likes: ['shrimp', 'blood', 'divine'], shape: 'shrimp', tireMax: 9, wMin: 200.0, wMax: 1200.0, lMin: 300, lMax: 700 },
+  { id: 'tomKhong', name: 'Tôm Khổng Lồ',    bodyCol: '#ff6030', bellyCol: '#ffb080', backCol: '#a03010', finCol: '#ff8040', size: 70, speed: 2.0, rarity: 3,  value: 120000,  strength: 8.0, minD: 0.5, maxD: 1.0, rare: true, likes: ['shrimp', 'blood', 'divine'], shape: 'shrimp', tireMax: 9, wMin: 200.0, wMax: 1200.0, lMin: 300, lMax: 700, scoopWord: 'TÔM' },
 ];
 
 // ===== 5 Worlds — mỗi world có 1 boss iconic =====
@@ -494,7 +494,8 @@ function engageFish(fish) {
   tension = 0;
   reelDist = 0;
   const tm = fish.type.tireMax;
-  hintBar.innerHTML = `Kéo đến đầy thanh xanh · Cá này phải mệt <b>${tm}</b> lần → khi KIỆT SỨC bấm <b>VỚT CÁ</b>`;
+  const sw = fish.type.scoopWord || 'CÁ';
+  hintBar.innerHTML = `Kéo đến đầy thanh xanh · Con này phải mệt <b>${tm}</b> lần → khi KIỆT SỨC bấm <b>VỚT ${sw}</b>`;
 }
 
 function lineSnap() {
@@ -960,7 +961,7 @@ function update(dt) {
         if (f.tireCount >= f.type.tireMax) {
           f.readyToScoop = true;
           f.tired = true;
-          showToast('🥱 CÁ KIỆT SỨC — VỚT NGAY!');
+          showToast('🥱 ' + (f.type.scoopWord || 'CÁ') + ' KIỆT SỨC — VỚT NGAY!');
         } else {
           // Brief breather — fish resumes fighting after
           f.tired = true;
@@ -1067,6 +1068,9 @@ function update(dt) {
 
     // Show scoop label only when fully exhausted (readyToScoop)
     if (f.readyToScoop) {
+      const word = f.type.scoopWord || 'CÁ';   // tôm -> "VỚT TÔM", cá -> "VỚT CÁ"
+      tiredBadge.textContent = '🥱 ' + (word === 'TÔM' ? 'TÔM' : 'CÁ') + ' ĐÃ MỆT — DÙNG VỢT!';
+      scoopLabel.textContent = '🥅 VỚT ' + word + '!';
       tiredBadge.classList.add('show');
       scoopLabel.classList.add('show');
       scoopLabel.style.left = f.x + 'px';
