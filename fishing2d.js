@@ -292,9 +292,9 @@ const FISH_TYPES = [
   { id: 'voiTrang', name: 'Cá voi trắng',    bodyCol: '#f0f4f8', bellyCol: '#ffffff', backCol: '#b0c0d0', finCol: '#d0d8e0', size: 76, speed: 2.0, rarity: 1.2, value: 80000,  strength: 11.0, minD: 0.3, maxD: 1.0, rare: true,  likes: ['diamond', 'blood', 'electric'], shape: 'orca',    tireMax: 10, wMin: 800.0, wMax: 4000.0, lMin: 400, lMax: 900 },
   { id: 'quaiBang', name: 'Quái Băng Cổ',    bodyCol: '#80c0ff', bellyCol: '#c0e8ff', backCol: '#2050a0', finCol: '#40a0ff', size: 84, speed: 2.6, rarity: 0.5, value: 200000, strength: 14.0, minD: 0.4, maxD: 1.0, rare: true,  likes: ['magic', 'soul', 'electric'],   shape: 'shark',     tireMax: 12, wMin: 1500.0, wMax: 6000.0, lMin: 600, lMax: 1200 },
   // ===== World 10: Vực Thẳm Phát Sáng — cá biển sâu kỳ dị =====
-  { id: 'denLong',  name: 'Cá đèn lồng',     bodyCol: '#202830', bellyCol: '#404850', backCol: '#101418', finCol: '#ffe040', size: 30, speed: 1.6, rarity: 14,  value: 4000,   strength: 2.5, minD: 0.6, maxD: 1.0,  rare: false, likes: ['lure', 'electric'],     shape: 'grouper',   tireMax: 3, wMin: 5.0,   wMax: 30.0,  lMin: 40,  lMax: 90  },
+  { id: 'denLong',  name: 'Cá đèn lồng',     bodyCol: '#202830', bellyCol: '#404850', backCol: '#101418', finCol: '#ffe040', size: 30, speed: 1.6, rarity: 14,  value: 4000,   strength: 2.5, minD: 0.6, maxD: 1.0,  rare: false, likes: ['lure', 'electric'],     shape: 'lantern',   tireMax: 3, wMin: 5.0,   wMax: 30.0,  lMin: 40,  lMax: 90  },
   { id: 'ranBien',  name: 'Cá rắn biển sâu', bodyCol: '#3a2a4a', bellyCol: '#8060a0', backCol: '#1a1028', finCol: '#a040ff', size: 56, speed: 3.0, rarity: 6,   value: 18000,  strength: 5.5, minD: 0.5, maxD: 1.0,  rare: true,  likes: ['lure', 'soul', 'magic'], shape: 'gar',       tireMax: 7, wMin: 60.0,  wMax: 400.0, lMin: 300, lMax: 800 },
-  { id: 'mucKhong', name: 'Mực khổng lồ',    bodyCol: '#c04060', bellyCol: '#ff90b0', backCol: '#701030', finCol: '#a02040', size: 80, speed: 2.2, rarity: 2,   value: 60000,  strength: 9.5, minD: 0.5, maxD: 1.0,  rare: true,  likes: ['blood', 'soul', 'divine'], shape: 'orca',    tireMax: 11, wMin: 400.0, wMax: 2500.0, lMin: 500, lMax: 1300 },
+  { id: 'mucKhong', name: 'Mực khổng lồ',    bodyCol: '#c04060', bellyCol: '#ff90b0', backCol: '#701030', finCol: '#a02040', size: 80, speed: 2.2, rarity: 2,   value: 60000,  strength: 9.5, minD: 0.5, maxD: 1.0,  rare: true,  likes: ['blood', 'soul', 'divine'], shape: 'squid',   tireMax: 11, wMin: 400.0, wMax: 2500.0, lMin: 500, lMax: 1300 },
   { id: 'rongBien', name: 'Rồng Biển Sâu',   bodyCol: '#10c0a0', bellyCol: '#80ffe0', backCol: '#085040', finCol: '#00ffc0', size: 90, speed: 2.8, rarity: 0.8, value: 300000, strength: 16.0, minD: 0.6, maxD: 1.0, rare: true,  likes: ['magic', 'divine', 'infinity'], shape: 'arowana', tireMax: 13, wMin: 2000.0, wMax: 8000.0, lMin: 800, lMax: 1500 },
   { id: 'thanVuc',  name: 'Thần Vực Thẳm',   bodyCol: '#ff40c0', bellyCol: '#ffa0e0', backCol: '#a00080', finCol: '#ff80ff', size: 100, speed: 3.2, rarity: 0.3, value: 1000000, strength: 22.0, minD: 0.7, maxD: 1.0, rare: true, likes: ['divine', 'infinity', 'cosmic'], shape: 'arapaima', tireMax: 16, wMin: 5000.0, wMax: 20000.0, lMin: 1000, lMax: 2000 },
 ];
@@ -3432,6 +3432,106 @@ function drawFish(f) {
     // Ornate mouth
     ctx.strokeStyle = '#804020'; ctx.lineWidth = 1.5;
     ctx.beginPath(); ctx.arc(s * 0.95, s * 0.1, s * 0.08, Math.PI * 1.2, Math.PI * 1.9); ctx.stroke();
+  } else if (shape === 'squid') {
+    // 🦑 Mực khổng lồ — thân hình ống + 8 xúc tu uốn lượn
+    // Xúc tu (vẽ trước, phía sau thân) — đuôi mực hướng về -x (sau lưng)
+    ctx.fillStyle = fin;
+    ctx.strokeStyle = back; ctx.lineWidth = Math.max(1, s * 0.04);
+    const arms = 8;
+    for (let i = 0; i < arms; i++) {
+      const spread = (i / (arms - 1) - 0.5) * s * 0.9;     // toả ngang
+      const sway = Math.sin(time * 3 + i * 0.8) * s * 0.5;  // ngọ nguậy
+      ctx.beginPath();
+      ctx.moveTo(-s * 0.55, spread * 0.4);
+      ctx.quadraticCurveTo(-s * 1.3, spread + sway * 0.5, -s * 2.1, spread * 1.3 + sway);
+      ctx.lineWidth = Math.max(1.5, s * 0.12 * (1 - i / arms * 0.3));
+      ctx.strokeStyle = bc;
+      ctx.stroke();
+      // chấm giác hút ở đầu xúc tu
+      ctx.fillStyle = belly;
+      ctx.beginPath(); ctx.arc(-s * 2.1, spread * 1.3 + sway, s * 0.06, 0, Math.PI * 2); ctx.fill();
+    }
+    // 2 xúc tu dài hơn (tay săn mồi)
+    for (let k = -1; k <= 1; k += 2) {
+      const sway = Math.sin(time * 2.5 + k) * s * 0.4;
+      ctx.strokeStyle = bc; ctx.lineWidth = Math.max(2, s * 0.1);
+      ctx.beginPath();
+      ctx.moveTo(-s * 0.5, k * s * 0.2);
+      ctx.quadraticCurveTo(-s * 1.8, k * s * 0.3 + sway, -s * 2.7, k * s * 0.5 + sway);
+      ctx.stroke();
+    }
+    // Thân ống (mantle) — bo tròn đầu, nhọn về phía vây đuôi
+    const bodyGrad = ctx.createLinearGradient(0, -s * 0.6, 0, s * 0.6);
+    bodyGrad.addColorStop(0, belly); bodyGrad.addColorStop(0.5, bc); bodyGrad.addColorStop(1, back);
+    ctx.fillStyle = bodyGrad;
+    ctx.beginPath();
+    ctx.moveTo(s * 1.5, 0);                                   // đầu nhọn (hướng bơi)
+    ctx.quadraticCurveTo(s * 0.9, -s * 0.7, -s * 0.2, -s * 0.55);
+    ctx.quadraticCurveTo(-s * 0.5, 0, -s * 0.2, s * 0.55);
+    ctx.quadraticCurveTo(s * 0.9, s * 0.7, s * 1.5, 0);
+    ctx.closePath(); ctx.fill();
+    // Vây tam giác 2 bên đầu nhọn
+    ctx.fillStyle = fin;
+    ctx.beginPath();
+    ctx.moveTo(s * 1.3, -s * 0.35); ctx.lineTo(s * 1.95, -s * 0.7); ctx.lineTo(s * 1.15, -s * 0.05);
+    ctx.closePath(); ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(s * 1.3, s * 0.35); ctx.lineTo(s * 1.95, s * 0.7); ctx.lineTo(s * 1.15, s * 0.05);
+    ctx.closePath(); ctx.fill();
+    // Mắt mực to (đặc trưng)
+    drawEye(s * 0.55, -s * 0.12, s * 0.2, s * 0.04);
+    drawEye(s * 0.55, s * 0.12, s * 0.2, s * 0.04);
+  } else if (shape === 'lantern') {
+    // 🏮 Cá đèn lồng — thân tròn răng nhọn + cần đèn phát sáng trên đầu
+    // Quầng sáng từ đèn
+    const glowX = s * 1.4, glowY = -s * 0.9;
+    ctx.save();
+    const glow = ctx.createRadialGradient(glowX, glowY, 0, glowX, glowY, s * 1.6);
+    glow.addColorStop(0, 'rgba(255,240,120,0.85)');
+    glow.addColorStop(0.4, 'rgba(255,220,80,0.35)');
+    glow.addColorStop(1, 'rgba(255,220,80,0)');
+    ctx.fillStyle = glow;
+    ctx.beginPath(); ctx.arc(glowX, glowY, s * 1.6, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+    // Thân tròn mập
+    const lg = ctx.createRadialGradient(-s * 0.2, -s * 0.2, s * 0.2, 0, 0, s * 1.1);
+    lg.addColorStop(0, bc); lg.addColorStop(1, back);
+    ctx.fillStyle = lg;
+    ctx.beginPath(); ctx.ellipse(0, 0, s * 1.05, s * 0.85, 0, 0, Math.PI * 2); ctx.fill();
+    // Đuôi
+    ctx.fillStyle = fin;
+    ctx.beginPath();
+    ctx.moveTo(-s * 0.9, 0); ctx.lineTo(-s * 1.6, -s * 0.5); ctx.lineTo(-s * 1.4, 0); ctx.lineTo(-s * 1.6, s * 0.5);
+    ctx.closePath(); ctx.fill();
+    // Miệng rộng + răng nanh nhọn (đáng sợ)
+    ctx.fillStyle = '#1a0a0a';
+    ctx.beginPath();
+    ctx.moveTo(s * 0.3, s * 0.15);
+    ctx.quadraticCurveTo(s * 1.1, s * 0.2, s * 1.0, s * 0.55);
+    ctx.quadraticCurveTo(s * 0.6, s * 0.5, s * 0.3, s * 0.4);
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#fff';
+    for (let i = 0; i < 5; i++) {
+      const tx = s * 0.4 + i * s * 0.14;
+      ctx.beginPath();
+      ctx.moveTo(tx, s * 0.2); ctx.lineTo(tx + s * 0.05, s * 0.42); ctx.lineTo(tx + s * 0.12, s * 0.2);
+      ctx.closePath(); ctx.fill();
+    }
+    // Cần đèn (cong từ đầu lên trên) + bóng đèn phát sáng
+    ctx.strokeStyle = back; ctx.lineWidth = Math.max(1.5, s * 0.08);
+    ctx.beginPath();
+    ctx.moveTo(s * 0.4, -s * 0.6);
+    ctx.quadraticCurveTo(s * 1.2, -s * 1.3, glowX, glowY);
+    ctx.stroke();
+    // Bóng đèn nhấp nháy
+    const pulse = 0.7 + Math.sin(time * 4) * 0.3;
+    ctx.save();
+    ctx.shadowColor = '#ffe040'; ctx.shadowBlur = 16;
+    ctx.fillStyle = `rgba(255,245,150,${pulse})`;
+    ctx.beginPath(); ctx.arc(glowX, glowY, s * 0.22, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+    // Mắt to phát sáng
+    drawEye(s * 0.35, -s * 0.2, s * 0.18, s * 0.03);
   } else {
     // Fallback basic
     ctx.fillStyle = bc;
