@@ -521,8 +521,24 @@ function resetToIdle() {
   biteAlert.classList.remove('show');
   tiredBadge.classList.remove('show');
   scoopLabel.classList.remove('show');
+  if (btnCut) btnCut.style.display = 'none';
   hintBar.innerHTML = 'Chạm & giữ màn hình ngắm hướng — thả tay để quăng cần';
 }
+
+// ✂️ Cắt dây — thả con cá đang câu (hoặc thu dây bỏ cuộc) bất cứ lúc nào.
+function cutLine() {
+  if (state !== 'fishing' && state !== 'fighting' && state !== 'casting') return;
+  if (hook.onFish) { hook.onFish.onHook = false; hook.onFish = null; }
+  // Vài bọt nước tại chỗ cắt
+  for (let i = 0; i < 8; i++) {
+    particles.push({ x: hook.x, y: hook.y, vx: rand(-2, 2), vy: rand(-3, -1), life: 25, col: '#a0c4e0' });
+  }
+  showToast('✂️ Đã cắt dây — thả cá ra');
+  resetToIdle();
+}
+const btnCut = document.getElementById('btnCut');
+if (btnCut) btnCut.addEventListener('click', cutLine);
+addEventListener('keydown', e => { if (e.key.toLowerCase() === 'c') cutLine(); });
 
 let pendingCatch = null; // { value, weightKg, name } — chờ user chọn bán hay nấu
 function catchFish(fish) {
@@ -670,6 +686,8 @@ function spawnFish() {
 // ===== Update =====
 function update(dt) {
   time += dt;
+  // Hiện nút ✂️ Cắt dây khi đang câu (thả mồi / kéo cá), ẩn khi rảnh
+  if (btnCut) btnCut.style.display = (state === 'fishing' || state === 'fighting') ? 'block' : 'none';
   // Đói giảm dần theo thời gian — nhanh hơn khi đang câu
   const hungerDecay = (state === 'fishing' || state === 'fighting') ? 0.6 : 0.3;
   hunger = Math.max(0, hunger - dt * hungerDecay);
