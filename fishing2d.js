@@ -3608,7 +3608,13 @@ function hungerMult() {
 }
 
 catchSellBtn.addEventListener('click', () => {
-  if (pendingCatch) { money += pendingCatch.value; showToast('Đã bán ' + pendingCatch.name + ' +' + pendingCatch.value + 'đ'); }
+  if (pendingCatch) {
+    let gain = pendingCatch.value;
+    let boostMsg = '';
+    if (moneyBoostActive()) { gain *= 2; boostMsg = ' ⚡x2'; }
+    money += gain;
+    showToast('Đã bán ' + pendingCatch.name + ' +' + gain + 'đ' + boostMsg);
+  }
   pendingCatch = null;
   catchPopup.classList.remove('show');
   updateHUD();
@@ -3621,6 +3627,99 @@ catchCookBtn.addEventListener('click', () => {
   updateHUD();
   resetToIdle();
 });
+
+// ===== 🎁 Xem quảng cáo nhận thưởng (Rewarded Ads) =====
+// Mỗi loại quà có cooldown riêng để chống spam. Mốc thời gian lưu trong localStorage.
+const REWARDS = [
+  { id: 'coin',  emoji: '💰', label: '+50.000đ',            cooldownMin: 3,  apply: () => { money += 50000; showToast('🎉 Nhận +50.000đ!'); } },
+  { id: 'coinL', emoji: '💎', label: '+500.000đ',           cooldownMin: 10, apply: () => { money += 500000; showToast('🎉 Nhận +500.000đ!'); } },
+  { id: 'full',  emoji: '🍖', label: 'No bụng (đầy đói)',    cooldownMin: 5,  apply: () => { hunger = 100; showToast('🍖 Đã no bụng 100%!'); } },
+  { id: 'x2',    emoji: '⚡', label: 'x2 tiền câu cá (5 phút)', cooldownMin: 15, apply: () => { startMoneyBoost(5); } },
+];
+
+let moneyBoostUntil = 0; // mốc thời gian (ms) còn hiệu lực x2 tiền
+function startMoneyBoost(minutes) {
+  moneyBoostUntil = Date.now() + minutes * 60000;
+  showToast('⚡ x2 tiền câu cá trong ' + minutes + ' phút!');
+}
+function moneyBoostActive() { return Date.now() < moneyBoostUntil; }
+
+function rewardCooldownLeft(r) {
+  let last = 0;
+  try { last = parseInt(localStorage.getItem('adReward_' + r.id)) || 0; } catch (e) {}
+  const elapsed = (Date.now() - last) / 60000; // phút
+  return Math.max(0, r.cooldownMin - elapsed);
+}
+
+function renderRewardOptions() {
+  const box = document.getElementById('rewardOptions');
+  box.innerHTML = '';
+  REWARDS.forEach(r => {
+    const left = rewardCooldownLeft(r);
+    const ready = left <= 0;
+    const row = document.createElement('button');
+    row.style.cssText = 'display:flex;align-items:center;gap:12px;width:100%;padding:13px 14px;margin-bottom:10px;border-radius:10px;border:1px solid ' +
+      (ready ? '#50d070' : '#3a4a3a') + ';background:' + (ready ? '#16361f' : '#1a1a1a') + ';color:#fff;cursor:' + (ready ? 'pointer' : 'not-allowed') + ';text-align:left;';
+    row.innerHTML =
+      '<div style="font-size:28px;">' + r.emoji + '</div>' +
+      '<div style="flex:1;"><div style="font-weight:700;">' + r.label + '</div>' +
+      '<div style="font-size:11px;opacity:0.7;">' + (ready ? '▶ Xem quảng cáo để nhận' : '⏳ Chờ ' + Math.ceil(left) + ' phút nữa') + '</div></div>' +
+      '<div style="font-size:12px;font-weight:700;color:' + (ready ? '#50d070' : '#666') + ';">' + (ready ? '🎬 XEM' : '🔒') + '</div>';
+    if (ready) row.onclick = () => playAdThenReward(r);
+    box.appendChild(row);
+  });
+}
+
+const rewardBtn = document.getElementById('rewardBtn');
+const rewardPanel = document.getElementById('rewardPanel');
+rewardBtn.addEventListener('click', () => { renderRewardOptions(); rewardPanel.style.display = 'flex'; });
+document.getElementById('rewardClose').addEventListener('click', () => { rewardPanel.style.display = 'none'; });
+
+// Phát quảng cáo rồi trao thưởng.
+// === CHỖ CẮM QUẢNG CÁO THẬT ===
+// Hiện tại dùng quảng cáo DEMO (đếm ngược 5 giây). Khi có tài khoản ad (AdSense
+// rewarded / ad game), thay phần trong showDemoAd() bằng SDK của họ, gọi onComplete()
+// khi người dùng xem xong để trao thưởng.
+function playAdThenReward(r) {
+  rewardPanel.style.display = 'none';
+  showDemoAd(r, () => {
+    r.apply();
+    try { localStorage.setItem('adReward_' + r.id, Date.now().toString()); } catch (e) {}
+    updateHUD();
+  });
+}
+
+function showDemoAd(r, onComplete) {
+  const screen = document.getElementById('adScreen');
+  const timerEl = document.getElementById('adTimer');
+  const skipBtn = document.getElementById('adSkip');
+  const rewardLine = document.getElementById('adReward');
+  rewardLine.textContent = 'Phần thưởng: ' + r.emoji + ' ' + r.label;
+  let left = 5;
+  timerEl.textContent = left;
+  skipBtn.disabled = true;
+  skipBtn.style.cursor = 'not-allowed';
+  skipBtn.style.color = '#888';
+  screen.style.display = 'flex';
+  const iv = setInterval(() => {
+    left--;
+    timerEl.textContent = left > 0 ? left : '✓';
+    if (left <= 0) {
+      clearInterval(iv);
+      skipBtn.disabled = false;
+      skipBtn.style.cursor = 'pointer';
+      skipBtn.style.color = '#fff';
+      skipBtn.style.background = '#2a8a3a';
+      skipBtn.textContent = '🎁 Nhận thưởng';
+    }
+  }, 1000);
+  skipBtn.onclick = () => {
+    if (skipBtn.disabled) return;
+    clearInterval(iv);
+    screen.style.display = 'none';
+    onComplete();
+  };
+}
 
 shopBtn.addEventListener('click', () => openShop('rod'));
 shopCloseBtn.addEventListener('click', () => shopEl.classList.remove('show'));

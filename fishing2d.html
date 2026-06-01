@@ -261,6 +261,32 @@
   <button id="shopBtn">🛒 Shop</button>
   <button id="worldBtn" style="position:fixed;top:60px;right:10px;background:#2a4a8a;color:#fff;border:1px solid #6aa0ff;padding:10px 16px;border-radius:8px;cursor:pointer;font-weight:700;z-index:5;">🌍 Thế giới</button>
   <button id="voiceBtn" style="position:fixed;top:110px;right:10px;background:#4a2a6a;color:#fff;border:1px solid #c080ff;padding:10px 16px;border-radius:8px;cursor:pointer;font-weight:700;z-index:5;">🎤 Nói chuyện</button>
+  <button id="rewardBtn" style="position:fixed;top:160px;right:10px;background:#2a6a3a;color:#fff;border:1px solid #50d070;padding:10px 16px;border-radius:8px;cursor:pointer;font-weight:700;z-index:5;">🎁 Nhận quà</button>
+
+  <!-- Popup xem quảng cáo nhận thưởng -->
+  <div id="rewardPanel" style="position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.8);z-index:16;">
+    <div style="background:#0e2018;border:2px solid #50d070;border-radius:14px;padding:22px;min-width:320px;max-width:92vw;max-height:88vh;overflow-y:auto;text-align:center;">
+      <h2 style="color:#50d070;margin-bottom:6px;">🎁 Nhận quà miễn phí</h2>
+      <div style="font-size:13px;opacity:0.8;margin-bottom:16px;">Xem 1 quảng cáo ngắn để nhận thưởng. Mỗi phần thưởng cách nhau vài phút.</div>
+      <div id="rewardOptions"></div>
+      <button id="rewardClose" style="display:block;margin:6px auto 0;padding:10px 24px;background:#aa3030;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;">Đóng</button>
+    </div>
+  </div>
+
+  <!-- Màn hình quảng cáo (demo) — sau này thay bằng ad thật (AdSense/ad game) -->
+  <div id="adScreen" style="position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.92);z-index:40;">
+    <div style="text-align:center;max-width:92vw;">
+      <div style="font-size:12px;opacity:0.6;margin-bottom:8px;letter-spacing:2px;">QUẢNG CÁO</div>
+      <div id="adBox" style="width:300px;max-width:88vw;height:230px;border-radius:14px;background:linear-gradient(135deg,#1a3a6a,#3a1a6a);display:flex;flex-direction:column;align-items:center;justify-content:center;margin:0 auto;border:1px solid #5a6aff;">
+        <div style="font-size:46px;">🎬</div>
+        <div style="font-size:15px;opacity:0.85;margin-top:8px;">Quảng cáo demo đang chạy...</div>
+        <div id="adReward" style="font-size:13px;color:#ffcf5f;margin-top:6px;"></div>
+      </div>
+      <div id="adTimer" style="font-size:22px;font-weight:800;margin-top:14px;color:#fff;">5</div>
+      <div style="font-size:12px;opacity:0.6;margin-top:4px;">Vui lòng xem hết để nhận thưởng</div>
+      <button id="adSkip" style="margin-top:14px;padding:8px 20px;background:#333;color:#888;border:none;border-radius:6px;font-weight:600;cursor:not-allowed;" disabled>Bỏ qua</button>
+    </div>
+  </div>
 
   <div id="voicePanel" style="position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.8);z-index:15;">
     <div style="background:#1a1028;border:2px solid #c080ff;border-radius:14px;padding:20px;min-width:320px;max-width:92vw;max-height:85vh;overflow-y:auto;">
@@ -371,6 +397,6 @@
   <div id="toast"></div>
 
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
-  <script src="./fishing2d.js?v=62"></script>
+  <script src="./fishing2d.js?v=63"></script>
 </body>
 </html>
