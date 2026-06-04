@@ -1,4 +1,4 @@
-// ===== Câu Cá 2D =====
+﻿// ===== Câu Cá 2D =====
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 let W = 0, H = 0;
@@ -303,7 +303,7 @@ const FISH_TYPES = [
 // ===== 5 Worlds — mỗi world có 1 boss iconic =====
 const WORLDS = [
   { id: 'pond',        name: 'Hồ Làng',          desc: 'Nước ngọt — cá nhỏ cho người mới', unlockAt: 0,     boss: null,      skyTop: '#6ab0ff', skyBot: '#b0dfff', waterTop: '#3a90c0', waterBot: '#0a3060', spawns: ['tri', 'ro', 'vang', 'hong'] },
-  { id: 'island',      name: 'Đảo Hoang (Sinh Tồn)', desc: 'MIỄN PHÍ — ăn cá để không đói!', unlockAt: 0, boss: null, skyTop: '#f0b080', skyBot: '#ffe0a0', waterTop: '#4080a8', waterBot: '#0a1840', spawns: ['tri', 'ro', 'vang', 'hong', 'me', 'mevinh', 'tre', 'chep'] },
+  { id: 'island',      name: 'Đảo Hoang (Sinh Tồn)', desc: 'MIỄN PHÍ — câu cá thỏa thích!', unlockAt: 0, boss: null, skyTop: '#f0b080', skyBot: '#ffe0a0', waterTop: '#4080a8', waterBot: '#0a1840', spawns: ['tri', 'ro', 'vang', 'hong', 'me', 'mevinh', 'tre', 'chep'] },
   { id: 'mekong',      name: 'Sông Mekong',      desc: 'BOSS: Cá Nheo khổng lồ',           unlockAt: 500,   gemBase: 1,  boss: 'nheo',    skyTop: '#7fbfa0', skyBot: '#c0e0a0', waterTop: '#4a8a5a', waterBot: '#0a3020', spawns: ['hong', 'tre', 'loc', 'xanh', 'mevinh', 'tramtrang'] },
   { id: 'amazon',      name: 'Sông Amazon',      desc: 'BOSS: Cá Hồng Vĩ đuôi đỏ + Cá lóc bông', unlockAt: 5000, gemBase: 2, boss: 'hongvi', skyTop: '#5a7040', skyBot: '#a0c080', waterTop: '#3a6a40', waterBot: '#0a200a', spawns: ['tre', 'loc', 'nheo', 'xanh', 'locbong'] },
   { id: 'mississippi', name: 'Đầm Mississippi',  desc: 'BOSS: Cá Sấu Hỏa Tiển',            unlockAt: 25000, gemBase: 4,  boss: 'sau',     skyTop: '#b0a070', skyBot: '#d0c080', waterTop: '#6a5a30', waterBot: '#201810', spawns: ['nheo', 'hongvi', 'map', 'duoi'] },
@@ -315,7 +315,6 @@ const WORLDS = [
 ];
 let currentWorld = 'pond';
 let ownedWorlds = ['pond', 'island']; // các thế giới đã mở khóa (pond + island free)
-let hunger = 100; // 0..100 — khi đói thì giảm sức câu
 function worldObj() { return WORLDS.find(w => w.id === currentWorld); }
 
 // ===== State =====
@@ -341,10 +340,41 @@ let ownedRods = [0]; // indexes of owned rods
 let currentRod = 0;
 let ownedBaits = ['worm'];
 let currentBait = 'worm';
+
+// ===== LƯU / NẠP TIẾN TRÌNH =====
+// Trước đây chỉ 💎 được lưu, nên khi admin CẤP/THU quyền (reload trang) là mất sạch
+// tiền/cá/hiếm/cần/mồi/world. Giờ lưu TẤT CẢ để reload không mất gì.
+function saveGame() {
+  try {
+    localStorage.setItem('cauca2d_save', JSON.stringify({
+      money, diamonds, caughtCount, rareCount,
+      ownedRods, currentRod, ownedBaits, currentBait,
+      ownedWorlds, currentWorld
+    }));
+  } catch (e) {}
+}
+function loadGame() {
+  try {
+    const s = JSON.parse(localStorage.getItem('cauca2d_save') || 'null');
+    if (!s || typeof s !== 'object') return;
+    if (typeof s.money === 'number') money = s.money;
+    if (typeof s.diamonds === 'number') diamonds = s.diamonds;
+    if (typeof s.caughtCount === 'number') caughtCount = s.caughtCount;
+    if (typeof s.rareCount === 'number') rareCount = s.rareCount;
+    if (Array.isArray(s.ownedRods) && s.ownedRods.length) ownedRods = s.ownedRods;
+    if (typeof s.currentRod === 'number') currentRod = s.currentRod;
+    if (Array.isArray(s.ownedBaits) && s.ownedBaits.length) ownedBaits = s.ownedBaits;
+    if (typeof s.currentBait === 'string') currentBait = s.currentBait;
+    if (Array.isArray(s.ownedWorlds) && s.ownedWorlds.length) ownedWorlds = s.ownedWorlds;
+    if (typeof s.currentWorld === 'string') currentWorld = s.currentWorld;
+  } catch (e) {}
+}
+addEventListener('beforeunload', saveGame);   // lưu khi đóng/đổi trang hoặc reload (kể cả cấp/thu quyền)
+
 const net = { active: false, x: 0, y: 0, phase: 0 };
 
 const player = { x: 120, y: 0 };
-const rod = { angle: -Math.PI / 3.5, power: 0, powerDir: 1, tipX: 0, tipY: 0 };
+const rod = { angle: -Math.PI / 3.5, power: 0, powerDir: 1, tipX: 0, tipY: 0, bend: 0 };
 const bobber = { x: 0, y: 0, visible: false, bobPhase: 0, wobble: 0 };
 const boat = { phase: 0 };
 const hook = {
@@ -394,6 +424,14 @@ let reelDist = 0; // how close fish is to shore (0=hooked start, 1=caught)
 let biteFishCandidate = null;
 let strikeWindow = 0;   // > 0 nghĩa là cá đang ĐỚP MỒI, người chơi phải GIẬT CẦN để ghim lưỡi
 let strikeMissT = 0;    // đếm ngược sau khi giật hụt (cá nhả mồi, nghỉ một lúc)
+let hookSet = 0;        // 🪝 ĐỘ GHIM của lưỡi câu vào miệng cá (0..1) — đặt lúc GIẬT. Cao = cá khó sổng.
+let strikeDrag = null;  // thao tác vuốt-giật đang diễn ra: { lastY, peakV, dist }
+// Lực giật = quãng đường vuốt XUỐNG + tốc độ đỉnh, chuẩn hóa theo chiều cao màn hình.
+function strikeStrength(d) {
+  const distN = clamp(d.dist / (H * 0.28), 0, 1);   // vuốt ~28% chiều cao màn = đầy lực
+  const velN  = clamp(d.peakV / (H * 0.05), 0, 1);  // tốc độ vuốt đỉnh (mỗi frame)
+  return clamp(distN * 0.6 + velN * 0.5, 0, 1);
+}
 
 let time = 0; // game time for day/night
 const DAY_CYCLE = 180; // seconds for full day
@@ -436,8 +474,8 @@ function onPress() {
     powerWrap.classList.add('show');
     hintBar.innerHTML = 'Di chuyển chuột để ngắm hướng · Thả <b>CHUỘT</b> khi lực đầy để quăng xa';
   } else if (state === 'fishing' && strikeWindow > 0) {
-    // GIẬT CẦN đúng lúc cá đớp → ghim lưỡi vào miệng
-    strikeRod();
+    // Bắt đầu thao tác GIẬT: ghi điểm chạm, đo lực vuốt xuống ở update()
+    strikeDrag = { lastY: mouse.y, peakV: 0, dist: 0 };
   } else if (state === 'fighting') {
     // reeling — handled in update while mouse.down
     mouse.down = true;
@@ -447,6 +485,7 @@ function onPress() {
 
 function onRelease() {
   mouse.down = false;
+  if (strikeDrag) { finishStrike(); return; }   // thả tay sau khi vuốt-giật → ghim lưỡi vào mỏ cá
   if (state === 'charging') {
     const r = RODS[currentRod];
     const p = rod.power;
@@ -479,17 +518,43 @@ function onRelease() {
   }
 }
 
-// ⚡ Giật cần — khi cá đang đớp mồi, ghim lưỡi câu vào miệng cá rồi vào trận kéo.
-function strikeRod() {
+// ⚡ Giật cần — VUỐT MẠNH XUỐNG khi cá đớp. Lực vuốt = độ ghim lưỡi vào miệng (hookSet 0..1).
+function strikeRod(strength) {
   if (state !== 'fishing' || strikeWindow <= 0 || !biteFishCandidate) return;
   strikeWindow = 0;
-  rod.angle -= 0.5;            // hất cần lên cho cảm giác giật
-  // Bọt nước bắn lên tại lưỡi câu (cá giật mình)
-  for (let i = 0; i < 14; i++) {
-    particles.push({ x: hook.x, y: hook.y, vx: rand(-4, 4), vy: rand(-6, -1), life: 28, col: '#ffe080' });
+  strikeDrag = null;
+  powerWrap.classList.remove('show');
+  hookSet = clamp(strength == null ? 0.5 : strength, 0, 1); // Space/J (không vuốt) = ghim vừa 0.5
+  rod.angle -= 0.3 + hookSet * 0.6;            // giật càng mạnh → cần hất ngược lên càng nhiều
+  // Bọt nước bắn lên tại lưỡi câu — nhiều & mạnh theo lực giật
+  const n = 8 + Math.round(hookSet * 22);
+  for (let i = 0; i < n; i++) {
+    particles.push({ x: hook.x, y: hook.y, vx: rand(-4, 4) * (0.6 + hookSet), vy: rand(-7, -1) * (0.6 + hookSet), life: 28, col: '#ffe080' });
   }
-  showToast('🎯 GIẬT TRÚNG! Lưỡi câu ghim chặt vào miệng!');
+  if (hookSet >= 0.75)      showToast('🎯 GIẬT CỰC MẠNH! Lưỡi ghim SÂU vào mỏ — cá rất khó sổng!');
+  else if (hookSet >= 0.4)  showToast('🎯 Giật trúng! Lưỡi ghim khá chắc.');
+  else                      showToast('⚠️ Giật nhẹ quá — lưỡi chỉ mắc hờ, coi chừng cá giãy sổng!');
   engageFish(biteFishCandidate);
+}
+
+// Kết thúc thao tác vuốt-giật: tính lực từ quãng đường + tốc độ vuốt xuống rồi ghim lưỡi.
+function finishStrike() {
+  if (!strikeDrag) return;
+  strikeRod(strikeStrength(strikeDrag));
+}
+
+// 💢 Cá giãy LÀM VĂNG lưỡi câu — xảy ra khi móc ghim không đủ chặt (hookSet thấp).
+function hookThrown(fish) {
+  state = 'broken';
+  if (hook.onFish) hook.onFish.onHook = false;
+  hook.onFish = null;
+  tensionWrap.classList.remove('show');
+  tension = 0;
+  for (let i = 0; i < 12; i++) {
+    particles.push({ x: hook.x, y: hook.y, vx: rand(-3, 3), vy: rand(-5, -1), life: 26, col: '#a0c4e0' });
+  }
+  showToast('💢 Cá giãy văng lưỡi câu — móc ghim không đủ chặt, cá sổng mất!');
+  setTimeout(resetToIdle, 900);
 }
 
 function engageFish(fish) {
@@ -512,7 +577,9 @@ function engageFish(fish) {
   reelDist = 0;
   const tm = fish.type.tireMax;
   const sw = fish.type.scoopWord || 'CÁ';
-  hintBar.innerHTML = `Kéo đến đầy thanh xanh · Con này phải mệt <b>${tm}</b> lần → khi KIỆT SỨC bấm <b>VỚT ${sw}</b>`;
+  const setPct = Math.round(hookSet * 100);
+  const setTxt = hookSet >= 0.75 ? `🪝 Móc ghim SÂU ${setPct}% 💪` : (hookSet >= 0.4 ? `🪝 Móc ghim ${setPct}%` : `🪝 Móc mắc hờ ${setPct}% ⚠`);
+  hintBar.innerHTML = `${setTxt} · Kéo đến đầy thanh xanh · phải mệt <b>${tm}</b> lần → KIỆT SỨC bấm <b>VỚT ${sw}</b>`;
 }
 
 function lineSnap() {
@@ -533,6 +600,8 @@ function resetToIdle() {
   biteFishCandidate = null;
   hook.biteT = 0;
   strikeWindow = 0; strikeMissT = 0;
+  hookSet = 0; strikeDrag = null;
+  powerWrap.classList.remove('show');
   tension = 0;
   reelDist = 0;
   bobber.visible = false;
@@ -597,7 +666,7 @@ function catchFish(fish) {
   catchName.textContent = t.name;
   const lenDisplay = lenCm >= 100 ? (lenCm / 100).toFixed(lenCm >= 1000 ? 0 : 1) + ' m' : lenCm + ' cm';
   catchSize.textContent = `Cân nặng: ${weightKg}kg · Dài: ${lenDisplay}`;
-  catchReward.textContent = '💰 Bán: +' + value + 'đ  ·  🍖 Nấu: +' + Math.floor(foodPts) + ' đói' + (gemGain > 0 ? '  ·  💎 +' + gemGain : '');
+  catchReward.textContent = '💰 Bán: +' + value + 'đ' + (gemGain > 0 ? '  ·  💎 +' + gemGain : '');
   if (gemGain > 0) showToast('💎 +' + gemGain + ' kim cương!');
   pendingCatch = { value, foodPts: Math.floor(foodPts), name: t.name };
   catchPopup.classList.add('show');
@@ -715,13 +784,6 @@ function update(dt) {
   time += dt;
   // Hiện nút ✂️ Cắt dây khi đang câu (thả mồi / kéo cá), ẩn khi rảnh
   if (btnCut) btnCut.style.display = (state === 'fishing' || state === 'fighting') ? 'block' : 'none';
-  // Đói giảm dần theo thời gian — nhanh hơn khi đang câu
-  const hungerDecay = (state === 'fishing' || state === 'fighting') ? 0.6 : 0.3;
-  hunger = Math.max(0, hunger - dt * hungerDecay);
-  if (hungerFill) {
-    hungerFill.style.width = hunger + '%';
-    hungerLabel.textContent = Math.floor(hunger);
-  }
 
   // Occasionally spawn fish
   if (Math.random() < 0.02 && fishes.length < 12) spawnFish();
@@ -783,6 +845,15 @@ function update(dt) {
     const clamped = clamp(targetAng, -Math.PI * 0.6, 0);
     rod.angle = lerp(rod.angle, clamped, state === 'fighting' ? 0.2 : 0.1);
   }
+  // Độ cong (flex) đầu cần: 0 khi rảnh; cong nhẹ khi câu; cong mạnh theo tension + cá giãy khi kéo.
+  // Hook di chuyển theo cá → hướng cong đổi theo → "đầu cần cong theo chỗ con cá di chuyển".
+  let bendTarget = 0;
+  if (state === 'fishing') bendTarget = 0.18;
+  else if (state === 'fighting' && hook.onFish) {
+    const bf = hook.onFish;
+    bendTarget = clamp(0.32 + tension * 0.5 + (bf.struggling ? 0.22 : 0) - (bf.readyToScoop ? 0.12 : 0), 0, 1);
+  }
+  rod.bend = lerp(rod.bend, bendTarget, 0.2);
   // Boat gentle bobbing
   boat.phase += 0.02;
 
@@ -920,7 +991,7 @@ function update(dt) {
           if (strikeWindow <= 0) {
             strikeWindow = 1.1;  // có ~1.1 giây để giật cần kịp
             biteAlert.classList.add('show');
-            biteAlert.innerHTML = '⚡ CÁ ĐỚP MỒI! GIẬT CẦN NGAY! (chạm / Space)';
+            biteAlert.innerHTML = '⚡ CÁ ĐỚP MỒI! VUỐT MẠNH XUỐNG để giật cần ghim lưỡi!';
           }
         }
       } else {
@@ -932,15 +1003,33 @@ function update(dt) {
       if (strikeWindow <= 0) biteAlert.classList.remove('show');
     }
 
-    // Đếm ngược cửa sổ giật cần — hết giờ mà không giật thì cá nhả mồi bơi đi
+    // ===== Thao tác VUỐT-GIẬT trong cửa sổ giật cần =====
+    if (strikeWindow > 0) {
+      // Đang giữ sẵn mà chưa bắt đầu đo (vd: giữ tay từ trước khi cá đớp) → bắt đầu đo
+      if (mouse.down && !strikeDrag) strikeDrag = { lastY: mouse.y, peakV: 0, dist: 0 };
+      if (strikeDrag) {
+        const dy = mouse.y - strikeDrag.lastY;        // >0 = đang kéo XUỐNG (về phía mình)
+        if (dy > 0) { strikeDrag.dist += dy; if (dy > strikeDrag.peakV) strikeDrag.peakV = dy; }
+        strikeDrag.lastY = mouse.y;
+        // Thanh lực giật trực quan (tái dùng #powerWrap)
+        powerWrap.classList.add('show');
+        powerFill.style.width = (strikeStrength(strikeDrag) * 100) + '%';
+      }
+    }
+
+    // Đếm ngược cửa sổ giật — hết giờ: đang vuốt → tính lực hiện có; chưa động gì → cá nhả mồi
     if (strikeWindow > 0) {
       strikeWindow -= 0.016;
       if (strikeWindow <= 0) {
-        biteAlert.classList.remove('show');
-        hook.biteT = 0;
-        strikeMissT = 1.5;   // cá cảnh giác, nghỉ 1.5s
-        if (biteFishCandidate) biteFishCandidate.interest *= 0.4;
-        showToast('🐟 Cá nhả mồi mất rồi — giật cần chậm quá!');
+        if (strikeDrag) {
+          finishStrike();                 // hết giờ nhưng đã vuốt → vẫn ghim (lực đang có)
+        } else {
+          biteAlert.classList.remove('show');
+          hook.biteT = 0;
+          strikeMissT = 1.5;   // cá cảnh giác, nghỉ 1.5s
+          if (biteFishCandidate) biteFishCandidate.interest *= 0.4;
+          showToast('🐟 Cá nhả mồi mất rồi — chưa kịp giật cần!');
+        }
       }
     }
   }
@@ -1076,7 +1165,9 @@ function update(dt) {
       if (f.readyToScoop || f.recoveryT > 0) {
         tension = Math.max(0, tension - 0.02);
       } else {
-        tension += (0.008 + f.type.strength * 0.009) * (f.struggling ? 1.6 : 0.55) / r.strength;
+        // Móc ghim càng chặt (hookSet cao) → ít stress lên miệng cá → tension tăng chậm hơn
+        const setEase = 1.25 - hookSet * 0.5;   // hookSet 0 → 1.25 ; hookSet 1 → 0.75
+        tension += (0.008 + f.type.strength * 0.009) * (f.struggling ? 1.6 : 0.55) / r.strength * setEase;
       }
     } else if (lettingOut) {
       // giving slack — tension drops fast, fish runs freely
@@ -1105,6 +1196,15 @@ function update(dt) {
 
     tension = clamp(tension, 0, 1);
     tensionFill.style.height = (tension * 100) + '%';
+
+    // 💢 Nguy cơ VĂNG LƯỠI: móc ghim lỏng (hookSet thấp) + cá đang giãy → có thể sổng.
+    //    Móc ghim sâu (hookSet ~0.8+) gần như miễn nhiễm. Hằng số 0.0014 chỉnh độ khó.
+    const gm = (typeof godMode !== 'undefined' && godMode);
+    if (!gm && f.struggling && !f.tired && !f.readyToScoop) {
+      const loosen = 1 - hookSet;                            // 0 = ghim sâu, 1 = mắc hờ
+      const pullStress = reelingForResistance ? 1.6 : 1.0;   // gồng kéo lúc cá giật → dễ tuột hơn
+      if (Math.random() < loosen * loosen * 0.0014 * pullStress) { hookThrown(f); return; }
+    }
 
     if (tension >= 1) { lineSnap(); return; }
 
@@ -1917,15 +2017,37 @@ function drawFirstPersonRod() {
   const ny = (rod.tipY - gripEndY) / (rodLen || 1);
   const perpX = -ny, perpY = nx;
 
+  // ===== ĐỘ CONG (FLEX) — thân cần uốn cong về phía cá khi câu/kéo =====
+  const P0 = { x: gripEndX, y: gripEndY };
+  const straightTip = { x: rod.tipX, y: rod.tipY };
+  let bendPx = 0, pullX = 0, pullY = 0;
+  if (state === 'casting' || state === 'fishing' || state === 'fighting') {
+    const ddx = hook.x - straightTip.x, ddy = hook.y - straightTip.y;
+    const dl = Math.hypot(ddx, ddy) || 1;
+    pullX = ddx / dl; pullY = ddy / dl;              // hướng từ đầu cần tới cá
+    bendPx = rodLen * 0.34 * (rod.bend || 0);        // biên độ cong (px) theo tải
+  }
+  // Đầu cần lệch về phía cá; điểm điều khiển giữ trên trục thẳng → thân cần bẻ cong mềm mại.
+  const tipB = { x: straightTip.x + pullX * bendPx, y: straightTip.y + pullY * bendPx };
+  const ctrlP = { x: (P0.x + straightTip.x) / 2, y: (P0.y + straightTip.y) / 2 };
+  const qx = (t) => { const m = 1 - t; return m * m * P0.x + 2 * m * t * ctrlP.x + t * t * tipB.x; };
+  const qy = (t) => { const m = 1 - t; return m * m * P0.y + 2 * m * t * ctrlP.y + t * t * tipB.y; };
+  const qframe = (t) => {
+    const dx = 2 * (1 - t) * (ctrlP.x - P0.x) + 2 * t * (tipB.x - ctrlP.x);
+    const dy = 2 * (1 - t) * (ctrlP.y - P0.y) + 2 * t * (tipB.y - ctrlP.y);
+    const l = Math.hypot(dx, dy) || 1;
+    return { px: -dy / l, py: dx / l, ax: dx / l, ay: dy / l };  // px,py: pháp tuyến · ax,ay: tiếp tuyến
+  };
+
   // Draw tapered rod as polygon (thick at base, thin at tip)
   const SEGS = 24;
   const pts = [];
   for (let i = 0; i <= SEGS; i++) {
     const t = i / SEGS;
-    const cx = gripEndX + nx * rodLen * t;
-    const cy = gripEndY + ny * rodLen * t;
+    const cx = qx(t), cy = qy(t);
+    const fr = qframe(t);
     const th = lerp(thickBase, thickTip, t) / 2;
-    pts.push([cx + perpX * th, cy + perpY * th, cx - perpX * th, cy - perpY * th]);
+    pts.push([cx + fr.px * th, cy + fr.py * th, cx - fr.px * th, cy - fr.py * th]);
   }
   // Glow halo first (behind rod)
   if (V.glow) {
@@ -1958,25 +2080,26 @@ function drawFirstPersonRod() {
   for (let i = 0; i <= SEGS; i++) ctx.lineTo(pts[i][0], pts[i][1]);
   for (let i = SEGS; i >= 0; i--) {
     const t = i / SEGS;
-    const cx = gripEndX + nx * rodLen * t;
-    const cy = gripEndY + ny * rodLen * t;
+    const cx = qx(t), cy = qy(t);
+    const fr = qframe(t);
     const th = lerp(thickBase, thickTip, t) / 4;
-    ctx.lineTo(cx + perpX * th, cy + perpY * th);
+    ctx.lineTo(cx + fr.px * th, cy + fr.py * th);
   }
   ctx.closePath(); ctx.fill();
 
   // Bamboo knots with decorative wrap
   if (V.knots) {
     for (let t = 0.2; t < 1; t += 0.2) {
-      const kx = gripEndX + nx * rodLen * t;
-      const ky = gripEndY + ny * rodLen * t;
+      const kx = qx(t), ky = qy(t);
+      const fr = qframe(t);
+      const kAng = Math.atan2(fr.ay, fr.ax) + Math.PI / 2;
       const kth = lerp(thickBase, thickTip, t) * 0.75;
       // dark ring
       ctx.fillStyle = '#4a2a10';
-      ctx.beginPath(); ctx.ellipse(kx, ky, kth, kth * 0.5, Math.atan2(ny, nx) + Math.PI / 2, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(kx, ky, kth, kth * 0.5, kAng, 0, Math.PI * 2); ctx.fill();
       // thread wrap
       ctx.strokeStyle = '#c0a040'; ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.ellipse(kx, ky, kth, kth * 0.5, Math.atan2(ny, nx) + Math.PI / 2, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath(); ctx.ellipse(kx, ky, kth, kth * 0.5, kAng, 0, Math.PI * 2); ctx.stroke();
     }
   }
 
@@ -1984,25 +2107,25 @@ function drawFirstPersonRod() {
   const joints = Math.min(4, Math.max(2, Math.floor(V.thick)));
   for (let i = 1; i <= joints; i++) {
     const t = i / (joints + 1);
-    const jx = gripEndX + nx * rodLen * t;
-    const jy = gripEndY + ny * rodLen * t;
+    const jx = qx(t), jy = qy(t);
+    const fr = qframe(t);
     const jth = lerp(thickBase, thickTip, t) / 2 + 1;
     // wrap base (darker)
     ctx.strokeStyle = V.grip;
     ctx.lineWidth = 6;
     ctx.beginPath();
-    ctx.moveTo(jx + perpX * jth, jy + perpY * jth);
-    ctx.lineTo(jx - perpX * jth, jy - perpY * jth);
+    ctx.moveTo(jx + fr.px * jth, jy + fr.py * jth);
+    ctx.lineTo(jx - fr.px * jth, jy - fr.py * jth);
     ctx.stroke();
     // accent line (shiny rods)
     if (V.shiny || V.glow) {
       ctx.strokeStyle = V.reelCore || V.glow || V.rod2;
       ctx.lineWidth = 1.5;
-      const wx = jx + nx * 1.5;
-      const wy = jy + ny * 1.5;
+      const wx = jx + fr.ax * 1.5;
+      const wy = jy + fr.ay * 1.5;
       ctx.beginPath();
-      ctx.moveTo(wx + perpX * jth, wy + perpY * jth);
-      ctx.lineTo(wx - perpX * jth, wy - perpY * jth);
+      ctx.moveTo(wx + fr.px * jth, wy + fr.py * jth);
+      ctx.lineTo(wx - fr.px * jth, wy - fr.py * jth);
       ctx.stroke();
     }
   }
@@ -2011,17 +2134,17 @@ function drawFirstPersonRod() {
   const segs = V.eyelets || 3;
   for (let i = 1; i <= segs; i++) {
     const t = i / (segs + 1);
-    const ex = gripEndX + nx * rodLen * t;
-    const ey = gripEndY + ny * rodLen * t;
+    const ex = qx(t), ey = qy(t);
+    const fr = qframe(t);
     const eth = lerp(thickBase, thickTip, t) / 2;
     const ringR = Math.max(2.5, 4 - t * 2);
     // post (perpendicular, away from bottom of rod)
-    const postX = ex + perpX * (eth + ringR * 0.5);
-    const postY = ey + perpY * (eth + ringR * 0.5);
+    const postX = ex + fr.px * (eth + ringR * 0.5);
+    const postY = ey + fr.py * (eth + ringR * 0.5);
     ctx.strokeStyle = V.grip;
     ctx.lineWidth = 1.8;
     ctx.beginPath();
-    ctx.moveTo(ex + perpX * eth, ey + perpY * eth);
+    ctx.moveTo(ex + fr.px * eth, ey + fr.py * eth);
     ctx.lineTo(postX, postY);
     ctx.stroke();
     // ring (shiny metal)
@@ -2035,19 +2158,19 @@ function drawFirstPersonRod() {
     ctx.beginPath(); ctx.arc(postX, postY, ringR - 0.7, 0, Math.PI * 2); ctx.stroke();
   }
 
-  // ===== Rod tip (protective ceramic cap) =====
+  // ===== Rod tip (protective ceramic cap) — theo đầu cần đã cong =====
   ctx.fillStyle = V.glow || V.reelCore || V.rod2;
-  ctx.beginPath(); ctx.arc(rod.tipX, rod.tipY, 3.5, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(tipB.x, tipB.y, 3.5, 0, Math.PI * 2); ctx.fill();
   ctx.strokeStyle = '#000a'; ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.arc(rod.tipX, rod.tipY, 3.5, 0, Math.PI * 2); ctx.stroke();
+  ctx.beginPath(); ctx.arc(tipB.x, tipB.y, 3.5, 0, Math.PI * 2); ctx.stroke();
   ctx.fillStyle = '#ffffff66';
-  ctx.beginPath(); ctx.arc(rod.tipX - 1, rod.tipY - 1, 1, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(tipB.x - 1, tipB.y - 1, 1, 0, Math.PI * 2); ctx.fill();
   // Premium glint
   if (V.glow) {
     ctx.save();
     ctx.shadowColor = V.glow; ctx.shadowBlur = 18;
     ctx.fillStyle = V.glow;
-    ctx.beginPath(); ctx.arc(rod.tipX, rod.tipY, 2, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(tipB.x, tipB.y, 2, 0, Math.PI * 2); ctx.fill();
     ctx.restore();
   }
 
@@ -2057,12 +2180,12 @@ function drawFirstPersonRod() {
   if (state === 'casting' || state === 'fishing' || state === 'fighting') {
     const tgtX = bobber.visible ? bobber.x : hook.x;
     const tgtY = bobber.visible ? bobber.y : hook.y;
-    const midX = (rod.tipX + tgtX) / 2;
-    const midY = (rod.tipY + tgtY) / 2 + (state === 'fighting' ? -6 : 18);
+    const midX = (tipB.x + tgtX) / 2;
+    const midY = (tipB.y + tgtY) / 2 + (state === 'fighting' ? -6 : 18);
     ctx.strokeStyle = tension > 0.7 ? '#ff4040' : 'rgba(255,255,255,0.85)';
     ctx.lineWidth = tension > 0.7 ? 2 : 1.2;
     ctx.beginPath();
-    ctx.moveTo(rod.tipX, rod.tipY);
+    ctx.moveTo(tipB.x, tipB.y);
     ctx.quadraticCurveTo(midX, midY, tgtX, tgtY);
     ctx.stroke();
   }
@@ -3883,15 +4006,9 @@ function updateHUD() {
   caughtEl.textContent = caughtCount;
   rareEl.textContent = rareCount;
   rodNameEl.textContent = RODS[currentRod].name;
-  if (hungerFill) {
-    hungerFill.style.width = hunger + '%';
-    hungerLabel.textContent = Math.floor(hunger);
-  }
+  saveGame();   // tự lưu tiến trình mỗi khi HUD đổi (tiền/cá/cần/world…) — reload/cấp-thu quyền không mất
 }
-function hungerMult() {
-  // 0.45 khi đói kiệt, 1.0 khi no
-  return 0.45 + (hunger / 100) * 0.55;
-}
+function hungerMult() { return 1; }   // (đã bỏ hệ thống đói — luôn đầy sức)
 
 catchSellBtn.addEventListener('click', () => {
   if (pendingCatch) {
@@ -3906,20 +4023,13 @@ catchSellBtn.addEventListener('click', () => {
   updateHUD();
   resetToIdle();
 });
-catchCookBtn.addEventListener('click', () => {
-  if (pendingCatch) { hunger = Math.min(100, hunger + pendingCatch.foodPts); showToast('🔥 Nấu ăn ngon +' + pendingCatch.foodPts + ' đói'); }
-  pendingCatch = null;
-  catchPopup.classList.remove('show');
-  updateHUD();
-  resetToIdle();
-});
+// (Đã bỏ nút "Nấu ăn" cùng hệ thống đói — sau khi câu chỉ còn lựa chọn Bán.)
 
 // ===== 🎁 Xem quảng cáo nhận thưởng (Rewarded Ads) =====
 // Mỗi loại quà có cooldown riêng để chống spam. Mốc thời gian lưu trong localStorage.
 const REWARDS = [
   { id: 'coin',  emoji: '💰', label: '+50.000đ',            cooldownMin: 3,  apply: () => { money += 50000; showToast('🎉 Nhận +50.000đ!'); } },
   { id: 'coinL', emoji: '💎', label: '+500.000đ',           cooldownMin: 10, apply: () => { money += 500000; showToast('🎉 Nhận +500.000đ!'); } },
-  { id: 'full',  emoji: '🍖', label: 'No bụng (đầy đói)',    cooldownMin: 5,  apply: () => { hunger = 100; showToast('🍖 Đã no bụng 100%!'); } },
   { id: 'x2',    emoji: '⚡', label: 'x2 tiền câu cá (5 phút)', cooldownMin: 15, apply: () => { startMoneyBoost(5); } },
 ];
 
@@ -4205,8 +4315,11 @@ function tick(now) {
 // ===== Admin Mode =====
 const isUrlAdmin = (() => {
   try {
-    const p = new URLSearchParams(location.search);
-    return p.get('admin') === '1' || p.get('admin') === 'toptop';
+    // Lọc bỏ ký tự lạ ở cuối (vd dấu "\" Windows tự thêm khi mở file://?admin=1)
+    const raw = (new URLSearchParams(location.search).get('admin') || '').replace(/[^a-z0-9]/gi, '').toLowerCase();
+    if (raw === '1' || raw === 'toptop') return true;
+    // Dự phòng: bắt thẳng trong URL kể cả khi bị thêm ký tự thừa
+    return /[?&]admin=(1|toptop)/i.test(location.href);
   } catch (e) { return false; }
 })();
 const isGrantedAdmin = (() => {
@@ -4329,10 +4442,12 @@ function applyRemoteCmd(s) {
     showToast('📢 Admin: ' + val);
   } else if (cmd === 'promote_admin') {
     try { localStorage.setItem('fishingGrantedAdmin', '1'); } catch (e) {}
+    saveGame();   // GIỮ NGUYÊN tiền/💎/cá/hiếm/cần/mồi/world trước khi reload áp quyền
     showToast('👑 Admin đã trao QUYỀN ĐẶC CẤP cho bạn! Đang reload...');
     setTimeout(() => location.reload(), 2200);
   } else if (cmd === 'revoke_admin') {
     try { localStorage.removeItem('fishingGrantedAdmin'); } catch (e) {}
+    saveGame();   // GIỮ NGUYÊN tiến trình khi thu quyền (reload)
     showToast('❌ Quyền đặc cấp đã bị thu hồi. Đang reload...');
     setTimeout(() => location.reload(), 2000);
   }
@@ -4565,9 +4680,13 @@ function callPeer(pid, name) {
 
 function escapeHtml(s) { return String(s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
 
+// Nạp tiến trình đã lưu (tiền/💎/cá/hiếm/cần/mồi/world) TRƯỚC khi sinh cá theo world
+loadGame();
+
 // Initialize a few fish + treasures
 for (let i = 0; i < 6; i++) spawnFish();
 for (let i = 0; i < 5; i++) spawnTreasure();
 updateHUD();
 updateBaitUI();
 requestAnimationFrame(tick);
+
