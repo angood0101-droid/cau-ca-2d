@@ -203,10 +203,12 @@
       #hintBar { font-size: 12px; padding: 8px 14px; max-width: 90vw; }
       #baitBtn { top: 128px; padding: 8px 10px; font-size: 11px; min-width: 150px; }
       #shopBtn { padding: 10px 12px; font-size: 13px; }
-      /* Line control buttons bigger for thumbs */
-      .lineBtn { width: 72px; padding: 14px 0; font-size: 11px; }
-      #lineLenBar { width: 72px; }
-      #lineCtrl { right: 12px; bottom: 12px; gap: 8px; }
+      /* Line control buttons — nhỏ gọn cho điện thoại (ẩn gợi ý phím R/F/T/C cho gọn) */
+      .lineBtn { width: 54px; padding: 7px 2px; font-size: 9px; border-width: 1.5px; border-radius: 9px; line-height: 1.2; }
+      .lineBtn .big { font-size: 17px; }
+      .lineBtn small, .lineBtn br { display: none; }
+      #lineLenBar { width: 54px; height: 5px; }
+      #lineCtrl { right: 8px; bottom: 10px; gap: 5px; }
       /* Power meter centered & bigger */
       #powerWrap { width: 80vw; max-width: 320px; height: 18px; bottom: 100px; }
       /* Tension bar larger */
@@ -222,7 +224,7 @@
       #hintBar {
         bottom: 8px; left: 8px; transform: none;
         font-size: 11px; padding: 7px 12px;
-        max-width: calc(100vw - 180px);
+        max-width: calc(100vw - 120px);
         line-height: 1.35;
       }
       /* Power meter raised above hint bar */
@@ -424,7 +426,7 @@
   <div id="toast"></div>
 
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
-  <script src="./fishing2d.js?v=77"></script>
+  <script src="./fishing2d.js?v=78"></script>
 </body>
 </html>
 
