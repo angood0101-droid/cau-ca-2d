@@ -211,8 +211,9 @@
       #lineCtrl { right: 8px; bottom: 10px; gap: 5px; }
       /* Power meter centered & bigger */
       #powerWrap { width: 80vw; max-width: 320px; height: 18px; bottom: 100px; }
-      /* Tension bar larger */
-      #tensionWrap { width: 22px; height: 180px; right: 95px; }
+      /* Thanh độ căng dây: đưa vào GÓC TRÊN–TRÁI, ngay dưới HUD */
+      #tensionWrap { top: 150px; left: 8px; right: auto; transform: none; width: 16px; height: 140px; }
+      #tensionWrap::before { left: 0; transform: none; font-size: 9px; top: -16px; }
       /* Scoop label touch-friendly */
       #fishScoopLabel { padding: 14px 22px; font-size: 17px; }
       /* Shop full screen on phone */
@@ -426,7 +427,7 @@
   <div id="toast"></div>
 
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
-  <script src="./fishing2d.js?v=78"></script>
+  <script src="./fishing2d.js?v=79"></script>
 </body>
 </html>
 
