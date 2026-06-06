@@ -4290,11 +4290,13 @@ function openWorldPanel() {
 }
 
 function switchWorld(w) {
-  if (state !== 'idle') { showToast('Thu dây trước khi đi!'); return; }
+  // Đang thả câu/kéo cá thì TỰ thu dây về trước (để bấm "Đến đây" lúc nào cũng vào được)
+  if (state !== 'idle') resetToIdle();
   currentWorld = w.id;
   fishes.length = 0;
   for (let i = 0; i < 6; i++) spawnFish();
   worldPanel.style.display = 'none';
+  updateHUD();   // lưu lại thế giới mới (saveGame chạy trong updateHUD) → reload không bị về world cũ
   showToast('Đến ' + w.name + ' 🌊');
 }
 
